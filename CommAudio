@@ -1,0 +1,156 @@
+CommAudio
+    Priority
+        TCP
+            -reliable file transfer
+        UDP
+            -multicast
+            -pre-decompression
+            -segementation recovery
+
+    Control Channel TCP  Kevin
+        Client Option enumeration
+            List of songs (vector)
+            List of channels (map<string channel, string addr_port_ip>)
+            Upload songs (N/A)
+            Microphone availability (bool)
+            serialize the above using newline seperated list (Wavefront type file)
+                S song1.mp3
+                S song2.mp3
+                C thepeak <ADDR>
+                C cfox <addr>
+                M true/false
+            Struct
+                struct ClientOptions {
+                        songs[];
+
+                }
+
+        clients stays connected to control channel as long as client is active.
+            if client disconnects, then client should be removed from multicast channels
+
+        Services {
+            vector<string> songs; "filename.mp3"
+            vector<string> channels; "name ip:port"
+            boolean microphone;
+        }
+        
+        string ListServices(); // returns list of services.
+        ParseServiceList( string s, Services & ); 
+
+
+    Jake
+    Download from song from server
+    Upload song to server
+        Client picks a song.
+        server saves to a file.
+            Already exists: failure.
+        Advanced
+            Organization, pick destination location
+            tags
+
+        bool Download(int s, string filename);
+            // Send "D " + filename + "\r\n"
+            // server replies with file data + disconnect.
+            // must reconnect.
+        bool Upload  (int s);
+            // Send "U " + filename "\r\n"
+            // client sends file data + disconnect.
+
+
+    Choose a song
+        Stream or file transfer TCP
+        server send music file
+        client recv music play or save.
+
+    Choose a channel
+        server adds client to multicast group
+        client recvs and plays music
+
+    Connect Microphone
+        server sends microphone input, recv and plays
+        clients sends microphone input, recvs and plays
+
+    libzplay
+        simple stream
+        save + play
+    stream -> no seek
+
+    stream
+        TCP = All formats OK
+        UDP = WAV 
+
+    Songs
+        Basic List
+        Basic Stream
+        Basic file transfer
+        Advanced
+            Playback Control (fast forward, reverse etc)
+            Organized by album
+            tags
+            download queue
+            Search
+
+    Dennis
+    Multicasting
+        Pick a channel
+            client connect
+            server list channels
+                thepeak 192.168.0.255:9189
+                cfox    192.168.0.255:1000
+            client disconnect.
+        Multiple clients one stream.
+        Advanced
+            stream queue management
+                server
+                client
+
+    Services.channels "ip:port"
+    parse_ipport(string s, string& ip, short& port);
+
+
+
+    server main
+        Services s;
+        // Populate s.channels
+        ...
+        s.channels.push_back("cfox 234.255.255.255:1234"); // msusic
+        ...
+        for each channel, 
+            create thread:
+                while 1:
+                    split channel_string to name, channel
+                    parse_ipport(channel, channel_addr, port);
+                    sendto channel, musicdata[name]
+
+    David
+    Client side multicast
+        get list of channels
+        pick a channel
+        connect to it and recv and play
+
+    David
+    Microphone UDP
+        Basic One way
+        Basic Two way
+
+
+
+Client
+    Connect
+
+Server
+    List available options (songs, multicasting groups, microphone, etc)
+    Microphone:
+        How does it work? between server-client
+        between client-client
+        Aman: server<->client two way communication
+        Eavesdrop
+
+Client
+    Pick option
+
+Derkerk mankey
+    pentest market magazine
+    talking about hiring for fortinet research team
+
+Project use as portfolio

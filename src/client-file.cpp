@@ -3,7 +3,7 @@
 	and downloading a file from the server. Only uploadFile and DownloadFile
 	should be called anywhere outside this file. Thanks.
 */
-#include "client-file.h"
+#include "commaudio.h"
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -385,8 +385,10 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	return 1;
 }
 
+#if 0
 int main()
 {
 	downloadFile(1338, "filename.txt");
 	//uploadFile(1338);
 }
+#endif

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-#include <windows.h>
 #include "CommAudio.h"
 
 using namespace std;

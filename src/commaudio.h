@@ -5,6 +5,10 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include "client-file.h"
 
 struct Services {
 	std::vector<std::string> songs;     // "filename1.wav"

@@ -52,7 +52,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -75,6 +75,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\client-file.cpp" />
+    <ClCompile Include="..\..\src\client-gui.cpp" />
     <ClCompile Include="..\..\src\client.cpp" />
     <ClCompile Include="..\..\src\comm-services.cpp" />
   </ItemGroup>

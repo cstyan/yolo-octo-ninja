@@ -5,7 +5,7 @@ CommAudio
         UDP
             -multicast
             -pre-decompression
-            -segementation recovery
+            -segmentation recovery
 
     Control Channel TCP  Kevin
         Client Option enumeration

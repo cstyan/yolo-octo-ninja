@@ -3,7 +3,7 @@
 	and downloading a file from the server. Only uploadFile and DownloadFile
 	should be called anywhere outside this file. Thanks.
 */
-#include "CommAudio.h"
+#include "client-file.h"
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -67,6 +67,7 @@ void uploadFile(int s)
 	
 	if (SelectFile(&upload))
 		FileThread = CreateThread(NULL, 0, UploadThread, (LPVOID)&upload, 0, NULL);
+	WaitForSingleObject(FileThread, INFINITE);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -157,10 +158,10 @@ bool Download(uData* Download, std::string filename)
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 
-	/*struct linger so_linger;
+	struct linger so_linger;
 	so_linger.l_onoff = TRUE;
 	so_linger.l_linger = 2000;
-	*/
+	
 
 	// ------------------------------------------------------------------------------------------
 	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE CLIENT ADDRESS
@@ -186,7 +187,7 @@ bool Download(uData* Download, std::string filename)
 
 	fp = fopen(Download->file, "rb");
 
-	//setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
+	setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
 
 	if ((SI = (LPSOCKET_INFORMATION) GlobalAlloc(GPTR, sizeof(SOCKET_INFORMATION))) == NULL)
     {
@@ -195,29 +196,40 @@ bool Download(uData* Download, std::string filename)
     } 
 
 	SI->Socket = sd;
+
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
-    SI->BytesSEND = 0;
+	SI->	Overlapped.hEvent = WSACreateEvent();
+
+	SI->BytesSEND = 0;
     SI->BytesRECV = 0;
     SI->DataBuf.len = BUFSIZE;
+	SI->DataBuf.buf = sbuf;
 
 	/* sending the download message to the server */
 	sprintf(SI->Buffer, "D %s\r\n", filename.c_str());
-	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);
+	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 
-	SI->Socket = sd;
-    ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
-    SI->BytesSEND = 0;
-    SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFSIZE;
+	DWORD flag = 0;
+	DWORD error1 = 0, error2 = 0, error3 = 0;
 
-	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	while (WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, 0, &SI->Overlapped, NULL) != SOCKET_ERROR && WSAGetLastError() == WSA_IO_PENDING)
+	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	int count = 0;
+	memset(sbuf, 0, sizeof(sbuf));
+	while (count++ < 10)
 	{
+		error1 = WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, &flag, &(SI->Overlapped), NULL);
+		if (error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
+			break;
+
+		WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, INFINITE, TRUE);
+		WSAGetOverlappedResult(SI->Socket, &SI->Overlapped, &error1, FALSE, &flag);
+		
 		WriteFile(hFile, SI->DataBuf.buf, strlen(SI->DataBuf.buf), &BytesWritten, NULL);
+		WSAResetEvent(SI->Overlapped.hEvent);
 	}
 
-	fclose(fp);
-	closesocket (sd);
+	CloseHandle(hFile);
+	closesocket(sd);
 	WSACleanup();
 	return true;
 }
@@ -317,7 +329,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	// ------------------------------------------------------------------------------------------
 	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE SERVER ADDRESS
 	// ------------------------------------------------------------------------------------------
-	if ((hp = gethostbyname("192.168.0.23")) == NULL)
+	if ((hp = gethostbyname("localhost")) == NULL)
 	{
 		err = WSAGetLastError();
 		return FALSE;
@@ -371,4 +383,10 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	closesocket (sd);
 	WSACleanup();
 	return 1;
+}
+
+int main()
+{
+	downloadFile(1338, "filename.txt");
+	//uploadFile(1338);
 }

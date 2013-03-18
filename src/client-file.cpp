@@ -4,17 +4,18 @@
 	should be called anywhere outside this file. Thanks.
 */
 #include "commaudio.h"
+#include "client-file.h"
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
 --
--- DATE: Feb 27, 2013
+-- DATE: Mar 18, 2013
 --
 -- DESIGNER:  Jacob Miner
 --
 -- PROGRAMMER:  Jacob Miner
 --
--- INTERFACE: bool DownloadFile(int s, string name)
+-- INTERFACE: bool DownloadFile(int s, string filename)
 --
 -- RETURNS: true if the file is successfully downloaded, false otherwise..
 --
@@ -81,7 +82,7 @@ void uploadFile(int s)
 --
 -- INTERFACE: bool SelectFile(uData* Download)
 --
--- RETURNS: bool.
+-- RETURNS: true if a file is selected, false otherwise
 --
 -- NOTES:
 -- Save a file using a dialog box.
@@ -115,7 +116,7 @@ bool SaveFile(uData* Download)
 --
 -- PROGRAMMER:  Jacob Miner
 --
--- INTERFACE: DWORD WINAPI DownloadThread(uData* Download, std::string filename)
+-- INTERFACE: bool DownloadThread(uData* Download, std::string filename)
 --
 -- RETURNS: true if function succeeded, false otherwise.
 --
@@ -182,9 +183,6 @@ bool Download(uData* Download, std::string filename)
 		return false;
 	}
 
-	memset((char *)sbuf, 0, sizeof(sbuf));
-	strcpy(sbuf, Download->file);
-
 	fp = fopen(Download->file, "rb");
 
 	setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
@@ -198,33 +196,39 @@ bool Download(uData* Download, std::string filename)
 	SI->Socket = sd;
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
-	SI->	Overlapped.hEvent = WSACreateEvent();
+	SI->Overlapped.hEvent = WSACreateEvent();
 
 	SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFSIZE;
-	SI->DataBuf.buf = sbuf;
 
+	SI->DataBuf.buf = sbuf;
 	/* sending the download message to the server */
-	sprintf(SI->Buffer, "D %s\r\n", filename.c_str());
+	int ret = sprintf(sbuf, "D %s\r\n", filename.c_str());
+	SI->DataBuf.len = ret;
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 
 	DWORD flag = 0;
-	DWORD error1 = 0, error2 = 0, error3 = 0;
+	DWORD error1 = 1, error2 = 0, error3 = 0;
 
 	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	int count = 0;
 	memset(sbuf, 0, sizeof(sbuf));
-	while (count++ < 10)
+
+	ret = 0;
+	while (error1 > 0)
 	{
+		SI->DataBuf.len = BUFSIZE;
 		error1 = WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, &flag, &(SI->Overlapped), NULL);
+
 		if (error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
 			break;
 
-		WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, INFINITE, TRUE);
+		ret = WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, INFINITE, TRUE);
+		if (ret == WSA_WAIT_TIMEOUT || ret == WSA_WAIT_IO_COMPLETION)
+			break;
+
 		WSAGetOverlappedResult(SI->Socket, &SI->Overlapped, &error1, FALSE, &flag);
-		
-		WriteFile(hFile, SI->DataBuf.buf, strlen(SI->DataBuf.buf), &BytesWritten, NULL);
+		WriteFile(hFile, SI->DataBuf.buf, error1, &BytesWritten, NULL);
 		WSAResetEvent(SI->Overlapped.hEvent);
 	}
 
@@ -245,7 +249,7 @@ bool Download(uData* Download, std::string filename)
 --
 -- INTERFACE: bool SelectFile(uData* upload)
 --
--- RETURNS: bool.
+-- RETURNS: true if a file is selected, false otherwise.
 --
 -- NOTES:
 -- Opens a file using a dialog box.
@@ -384,11 +388,3 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	WSACleanup();
 	return 1;
 }
-
-#if 0
-int main()
-{
-	downloadFile(1338, "filename.txt");
-	//uploadFile(1338);
-}
-#endif

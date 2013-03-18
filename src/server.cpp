@@ -1,5 +1,6 @@
 #include <iostream>
 #include "CommAudio.h"
+#include "server-file.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session
 	WSADATA wsaData;
-  WORD wVersionRequested = MAKEWORD(2,2);
+    WORD wVersionRequested = MAKEWORD(2,2);
 	WSAStartup(wVersionRequested, &wsaData);
 	
 	// Initialize some services.

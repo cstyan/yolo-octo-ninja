@@ -1,5 +1,5 @@
-#ifndef CLIENTFILE
-#define CLIENTFILE
+#ifndef SERVERFILE
+#define SERVERFILE
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -21,15 +21,13 @@
 typedef struct UDATA
 {
 	char file[1024];
-	int  port;
+	SOCKET socket;
 } uData;
 
 DWORD WINAPI UploadThread(LPVOID);
-bool downloadFile(int s, std::string filename);
-void uploadFile(int s);
-bool Download(uData*, std::string);
-bool SelectFile(uData*);
-bool SaveFile(uData*);
+bool sDownloadFile(SOCKET, std::string);
+void sUploadFile(SOCKET, std::string);
+bool Download(SOCKET, char*);
 // =========================================================== //
 
 typedef struct _SOCKET_INFORMATION {

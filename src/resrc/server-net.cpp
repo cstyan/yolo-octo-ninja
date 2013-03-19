@@ -1,18 +1,24 @@
 #include "a2.h"
+#include <string>
 #include <fstream>
 #include <iostream>
 #include <cstdio>
-
+#include "libzplay.h"
 // We attempt to recv the maximum udp size, such that configuring the server packet size isn't necessary.
 #define MAX_UDP_SIZE 65507
 
-SOCKET g_SSock;
-
-int SetupControlChannel ();
 using namespace std;
+using namespace libZPlay;
+
+ZPlay *player = CreateZPlay();
+
+SOCKET g_SSock;
+string INITSTREAM;
+int stream = 0; // stream status.
+int SetupControlChannel ();
+
 void CALLBACK ControlChannelRecvComplete ( DWORD dwError, DWORD dwTransferred, LPWSAOVERLAPPED lpOverlapped, DWORD dwFlags ) {
 	ServerParameters * sp = (ServerParameters *) lpOverlapped->hEvent;
-	
 	//SleepEx(1000, TRUE); // Could be UDP packets in transit.
 	
 	if (sp->control_buffer[0] == '\x04') // \x04 == EOT.
@@ -60,9 +66,19 @@ void CALLBACK RecvComplete ( DWORD dwError, DWORD dwTransferred, LPWSAOVERLAPPED
 	if (sp->file != NULL)
 		sp->file->write(sp->buffer, dwTransferred);
 	
+	if (!stream) {
+		INITSTREAM.append(sp->buffer, dwTransferred);
+		if((stream = player->OpenStream(1, 1, INITSTREAM.data(), INITSTREAM.size(), libZPlay::sfMp3))) {
+			player->Play();
+		}
+	} else if (stream) {
+		player->PushDataToStream(sp->buffer, dwTransferred);
+	}
+		
+	
 	// Continue to recv until we get EOT.
 	bool bEOT = false;
-	if (sp->tcp) { // only check for EOT if using TCP.
+	if (0 && sp->tcp) { // only check for EOT if using TCP.
 		for (size_t i = 0; i < dwTransferred; i++) {
 			if (sp->buffer[i] == 0x04)
 				bEOT = true;

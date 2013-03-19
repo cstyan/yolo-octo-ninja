@@ -12,22 +12,9 @@
 #define IDI_SMALL                       108
 #define IDC_DCWIN1                      109
 #define IDR_MAINFRAME                   128
+// Customize below per application
 #define IDM_FILE_MODE_CLIENT_TCP        130
-#define IDM_FILE_MODE_CLIENT_UDP        131
-#define IDM_FILE_MODE_SERVER_TCP        132
-#define IDM_FILE_MODE_SERVER_UDP        133
-#define IDM_FILE_PORT                   134
-#define IDM_PCKT_SOURCE                 135
-#define IDM_PCKT_SIZE                   136
-#define IDM_PCKT_MULTIPLE               137
 #define IDC_BTN_FILE                    200
-#define IDC_BTN_PROC                    201
-#define IDC_BTN_GO                      202
-#define IDC_TXT_PTYPE                   203
-#define IDC_TXT_STATS                   204
-#define IDC_EDT_PSIZE                   205
-#define IDC_EDT_PMULT                   206
-#define IDC_EDT_DEST                    207
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

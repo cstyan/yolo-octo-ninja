@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	while(1) {
 		char * buf = new char[65507];
 		int client_s = sizeof(client);
-		//printf("recv\n");
+		printf("recv\n");
 		int r = recvfrom (sock, buf, 65507, 0, (sockaddr*)&client, &client_s);
 		if (r == -1)
 			memset ((char *)&client, 0, sizeof(client)); // clear client addr to accept from other clients.
@@ -101,6 +101,8 @@ int main(int argc, char **argv) {
 int __stdcall cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2){
 		if (message == MsgStop )
 			return closesocket(sock);
+		
+		printf("client port %s %d\n", inet_ntoa(client.sin_addr) ,client.sin_port);
 		
 		// Send if we have a client to sendto
 		if (client.sin_port != 0)

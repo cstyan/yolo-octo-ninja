@@ -25,7 +25,7 @@ void mic_socket () {
 	memset((char *)&server, 0, sizeof(struct sockaddr_in));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(22);
-	if ((hp = gethostbyname("localhost")) == NULL)
+	if ((hp = gethostbyname("cookie-monster")) == NULL)
 		throw ( "Unknown server address\n");
 
 	// Copy the server address

@@ -17,12 +17,12 @@
 --				converts it to a string to send to the client, then reads the string and parses it,
 --				and puts it into the client's struct.
 ------------------------------------------------------------------------------------------------*/
-
 #include <sstream>
 #include <iostream>
 #include <vector>
 #include <string>
 #include "CommAudio.h"
+
 using namespace std;
 
 /*---------------------------------------------------------------------------------------
@@ -40,7 +40,8 @@ using namespace std;
 -- 	NOTES:	This function reads in the string sent from the server and updates the
 --			Services struct on the client.
 ----------------------------------------------------------------------------------------*/
-void ParseServicesList(string list, Services& s) {
+void ParseServicesList(string list, Services& s)
+/*{
 	vector<string>::const_iterator it;
 	string::size_type tokenStart = 0, curPos = 0;
 	string temp =  "";
@@ -59,7 +60,7 @@ void ParseServicesList(string list, Services& s) {
 			else if(token[0] == 'M')
 				s.microphone = (temp == "true" ? true : false);
 			break;
-		}	
+		}
 		token = list.substr(curPos, tokenStart - curPos);	// get current token
 		temp = token.substr(2);								// get data from token
 		if(token[0] == 'S')
@@ -70,8 +71,26 @@ void ParseServicesList(string list, Services& s) {
 			s.microphone = (temp == "true" ? true : false);
 		curPos = tokenStart + 1;
 	}
+}*/
+{
+	stringstream ss(list);
+	string token;
+	while (ss >> token) {
+		if (token == "S") {
+			string song;
+			if (ss >> song)
+				s.songs.push_back(song);
+		} else if (token == "C") {
+			string channel;
+			if (ss >> channel)
+				s.channels.push_back(channel);
+		} else if (token == "M") {
+			string mic;
+			if (ss >> mic)
+				s.microphone = (mic == "true" ? true : false);
+		}
+	}
 }
-
 
 /*---------------------------------------------------------------------------------------
 -- 	FUNCTION: ListServices()

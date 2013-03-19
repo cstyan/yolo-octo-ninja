@@ -22,17 +22,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
+#include "CommAudio.h"
 using namespace std;
-
-typedef struct {
-	vector<string> songs;		// "filename1.wav"
-	vector<string> channels;	// "name ip:port"
-	bool microphone;			// true if microphone is available
-} Services;
-
-Services sData, cData;	// Services structs for server (sData) and client (cData)
-
 
 /*---------------------------------------------------------------------------------------
 -- 	FUNCTION: ParseServicesList()
@@ -49,7 +40,7 @@ Services sData, cData;	// Services structs for server (sData) and client (cData)
 -- 	NOTES:	This function reads in the string sent from the server and updates the
 --			Services struct on the client.
 ----------------------------------------------------------------------------------------*/
-void ParseServicesList(string list, Services& s){
+void ParseServicesList(string list, Services& s) {
 	vector<string>::const_iterator it;
 	string::size_type tokenStart = 0, curPos = 0;
 	string temp =  "";
@@ -99,7 +90,7 @@ void ParseServicesList(string list, Services& s){
 --			The string will look like "S song1.wav\nS song2.wav\nC channel1 ipaddress:port\nC 
 --			channel2 ipaddress:port\nM true/false"
 ----------------------------------------------------------------------------------------*/
-string ListServices(const Services& s){
+string ListServices(const Services& s) {
 	vector<string>::const_iterator it;
 	string serv =  "";
 	
@@ -129,7 +120,7 @@ string ListServices(const Services& s){
 --
 -- 	NOTES:	This function prints out the contents of the Services struct.
 ----------------------------------------------------------------------------------------*/
-void printStruct(const Services& s){
+void printStruct(const Services& s) {
 	vector<string>::const_iterator it;
 
 	cout << endl << "Songs in List:" << endl;
@@ -148,7 +139,8 @@ void printStruct(const Services& s){
 	cout << "------------------------------------------------" << endl;
 }
 
-
+#ifdef _SERVICE_TEST
+Services sData, cData;	    // Services structs for server (sData) and client (cData)
 /*---------------------------------------------------------------------------------------------
 --	FUNCTION:	main
 --
@@ -201,3 +193,4 @@ int main(){
 
 
 }
+#endif

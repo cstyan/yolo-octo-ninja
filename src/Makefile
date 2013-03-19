@@ -1,10 +1,10 @@
 CC=g++
 CFLAGS=-g -Wall
 LIBS=-lgdi32 -lComdlg32 -lws2_32 -lzplay
-SERVER_SOURCES=server.cpp
+SERVER_SOURCES=server.cpp comm-services.cpp
 SERVER_OBJECTS=obj/client-res.o $(addprefix obj/,$(SERVER_SOURCES:.cpp=.o))
 
-CLIENT_SOURCES=client.cpp
+CLIENT_SOURCES=client.cpp comm-services.cpp
 CLIENT_OBJECTS=obj/client-res.o $(addprefix obj/,$(CLIENT_SOURCES:.cpp=.o))
 
 all: obj ../server.exe ../client.exe

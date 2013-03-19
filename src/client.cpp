@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
 	// Recv
 	
 	// Parse
-	ParseServicesList("S song1.mp3\nS song2.mp3\nC test\nM true", s);
+	ParseServicesList("S song1.mp3\nS song2.mp3", s);
 	
 	// Display
 	printStruct(s);

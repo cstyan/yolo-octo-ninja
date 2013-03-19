@@ -6,11 +6,12 @@
 #include <vector>
 #include <string>
 
-typedef struct {
+struct Services {
 	std::vector<std::string> songs;		  // "filename1.wav"
 	std::vector<std::string> channels;	// "name ip:port"
 	bool microphone;			    // true if microphone is available
-} Services;
+	Services () : microphone(false) {};
+};
 
 void ParseServicesList(std::string list, Services& s);
 std::string ListServices(const Services& s);

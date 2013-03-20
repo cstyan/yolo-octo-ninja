@@ -79,7 +79,9 @@ int main(int argc, char const *argv[])
 	
 	if (s.songs.size() >= 1) {
 		cout << "Downloading first song: " <<  s.songs[0] << endl;
-		downloadFile(sock, s.songs[0]);
+		downloadFile(1338, s.songs[0]);
+		while (true)
+			Sleep(1000);
 	}
 	
 	return 0;

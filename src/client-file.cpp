@@ -165,7 +165,7 @@ bool Download(uData* Download, std::string filename)
 	// ------------------------------------------------------------------------------------------
 	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE CLIENT ADDRESS
 	// ------------------------------------------------------------------------------------------
-	if ((hp = gethostbyname("192.168.0.23")) == NULL)
+	if ((hp = gethostbyname("localhost")) == NULL)
 	{
 		err = WSAGetLastError();
 		return false;

@@ -5,12 +5,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "client-file.h"
 
 struct Services {
-	std::vector<std::string> songs;		  // "filename1.wav"
-	std::vector<std::string> channels;	// "name ip:port"
-	bool microphone;			    // true if microphone is available
+	std::vector<std::string> songs;     // "filename1.wav"
+	std::vector<std::string> channels;  // "name ip:port"
+	bool microphone;                    // true if microphone is available
 	Services () : microphone(false) {};
 };
 

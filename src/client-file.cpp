@@ -3,7 +3,7 @@
 	and downloading a file from the server. Only uploadFile and DownloadFile
 	should be called anywhere outside this file. Thanks.
 */
-#include "client-file-header.h"
+#include "CommAudio.h"
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -128,7 +128,7 @@ bool Download(uData* Download, std::string filename)
 	SOCKET sd;
 	struct hostent	*hp;
 	struct sockaddr_in server;
-	char sbuf[BUFFSIZE];
+	char sbuf[BUFSIZE];
 	WSADATA WSAData;
 	WORD wVersionRequested;
 	FILE * fp;
@@ -182,9 +182,9 @@ bool Download(uData* Download, std::string filename)
 	}
 
 	memset((char *)sbuf, 0, sizeof(sbuf));
-	strcpy_s(sbuf, Download->file);
+	strcpy(sbuf, Download->file);
 
-	fopen_s(&fp, Download->file, "rb");
+	fp = fopen(Download->file, "rb");
 
 	//setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
 
@@ -198,17 +198,17 @@ bool Download(uData* Download, std::string filename)
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
     SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFFSIZE;
+    SI->DataBuf.len = BUFSIZE;
 
 	/* sending the download message to the server */
-	sprintf(SI->Buffer, "D %s\r\n", filename);
+	sprintf(SI->Buffer, "D %s\r\n", filename.c_str());
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);
 
 	SI->Socket = sd;
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
     SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFFSIZE;
+    SI->DataBuf.len = BUFSIZE;
 
 	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	while (WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, 0, &SI->Overlapped, NULL) != SOCKET_ERROR && WSAGetLastError() == WSA_IO_PENDING)
@@ -280,7 +280,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	SOCKET sd;
 	struct hostent	*hp;
 	struct sockaddr_in server;
-	char sbuf[BUFFSIZE];
+	char sbuf[BUFSIZE];
 	WSADATA WSAData;
 	WORD wVersionRequested;
 	FILE * fp;
@@ -334,9 +334,9 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	}
 
 	memset((char *)sbuf, 0, sizeof(sbuf));
-	strcpy_s(sbuf, upload->file);
+	strcpy(sbuf, upload->file);
 
-	fopen_s(&fp, upload->file, "rb");
+	fp = fopen(upload->file, "rb");
 
 	setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
 
@@ -350,7 +350,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
     SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFFSIZE;
+    SI->DataBuf.len = BUFSIZE;
 	sprintf(SI->Buffer, "U %s\r\n", upload->file);
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);
 
@@ -358,9 +358,9 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
     SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFFSIZE;
+    SI->DataBuf.len = BUFSIZE;
 
-	while (fread(SI->Buffer, 1, BUFFSIZE, fp) > 0)
+	while (fread(SI->Buffer, 1, BUFSIZE, fp) > 0)
 	{
 		SI->DataBuf.buf = SI->Buffer;
 		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);

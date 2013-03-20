@@ -77,5 +77,10 @@ int main(int argc, char const *argv[])
 	// Display
 	printStruct(s);
 	
+	if (s.songs.size() >= 1) {
+		cout << "Downloading first song: " <<  s.songs[0] << endl;
+		downloadFile(sock, s.songs[0]);
+	}
+	
 	return 0;
 }

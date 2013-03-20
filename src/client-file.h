@@ -4,8 +4,6 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
-#define BUFFSIZE 1024
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <windows.h>
@@ -37,7 +35,7 @@ bool SaveFile(uData*);
 typedef struct _SOCKET_INFORMATION {
    OVERLAPPED Overlapped;
    SOCKET Socket;
-   CHAR Buffer[BUFFSIZE];
+   CHAR Buffer[BUFSIZE];
    WSABUF DataBuf;
    DWORD BytesSEND;
    DWORD BytesRECV;

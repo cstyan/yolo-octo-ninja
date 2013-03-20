@@ -120,6 +120,7 @@ string ListServices(const Services& s) {
 		serv += "C " + *it + "\n";
 
 	serv += (s.microphone ? "M true" : "M false");
+	serv += "\n";
 
 	return serv;
 }

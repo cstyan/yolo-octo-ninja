@@ -69,7 +69,9 @@ int main(int argc, char const *argv[])
 	
 	// Initialize some services.
 	s.microphone = true;
+	s.songs.push_back("song1.mp3");
 	s.songs.push_back("song2.mp3");
+	s.songs.push_back("song3.mp3");
 
 	int sock = setup_listening();
 	wait_for_connections (sock);

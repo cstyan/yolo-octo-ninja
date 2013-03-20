@@ -6,6 +6,7 @@
 --	FUNCTIONS USEFUL TO PROJECT:	
 --				void ParceServicesList(string list, Services& s)
 --				string ListServices(const Services& s)
+--				void printStruct(const Services& s)
 --					
 --	DATE:		14/Mar/2013
 --	REVISION:	2.00	
@@ -28,8 +29,9 @@ using namespace std;
 /*---------------------------------------------------------------------------------------
 -- 	FUNCTION: ParseServicesList()
 --
--- 	DATE: 5/Mar/2013
+-- 	DATE: 	5/Mar/2013
 -- 	REVISIONS: 
+--			18/Mar/2013 - David Czech - improved efficiency with stringstreams
 --
 -- 	DESIGNER: Kevin Tangeman
 -- 	PROGRAMMER: Kevin Tangeman
@@ -41,37 +43,6 @@ using namespace std;
 --			Services struct on the client.
 ----------------------------------------------------------------------------------------*/
 void ParseServicesList(string list, Services& s)
-/*{
-	vector<string>::const_iterator it;
-	string::size_type tokenStart = 0, curPos = 0;
-	string temp =  "";
-	string token = "";
-	string delim = "\n";
-	
-	while(1){
-		tokenStart = list.find_first_of(delim, curPos);
-		if(tokenStart == string::npos){						// if reached end of string
-			token = list.substr(curPos);					// get current token
-			temp = token.substr(2);							// get data from token
-			if(token[0] == 'S')
-				s.songs.push_back(temp);
-			else if(token[0] == 'C')						// check whether token is for song,
-				s.channels.push_back(temp);					// channel or mic & write to struct
-			else if(token[0] == 'M')
-				s.microphone = (temp == "true" ? true : false);
-			break;
-		}
-		token = list.substr(curPos, tokenStart - curPos);	// get current token
-		temp = token.substr(2);								// get data from token
-		if(token[0] == 'S')
-			s.songs.push_back(temp);
-		else if(token[0] == 'C')							// check whether token is for song,
-			s.channels.push_back(temp);						// channel or mic & write to struct
-		else if(token[0] == 'M')
-			s.microphone = (temp == "true" ? true : false);
-		curPos = tokenStart + 1;
-	}
-}*/
 {
 	stringstream ss(list);
 	string token;

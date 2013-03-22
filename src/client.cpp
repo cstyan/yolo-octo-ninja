@@ -1,3 +1,4 @@
+#include <tchar.h>
 #include <iostream>
 #include <cstdlib>
 #include "CommAudio.h"
@@ -57,13 +58,45 @@ string recv_services (int sd) {
 	return out;
 }
 
-int main(int argc, char const *argv[])
-{
+HINSTANCE hInst;
+
+int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
+	MSG msg;
+	HWND hwnd;
+	HACCEL hAccelTable;
+
 	// Open up a Winsock v2.2 session
 	WSADATA wsaData;
-  WORD wVersionRequested = MAKEWORD(2,2);
+	WORD wVersionRequested = MAKEWORD(2,2);
 	WSAStartup(wVersionRequested, &wsaData);
-	
+
+	MyRegisterClass(hInstance);
+
+	// Perform application initialization:
+	if (!InitInstance (hInstance, nCmdShow, hwnd)) {
+		return FALSE;
+	}
+
+	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
+
+	// Main message loop:
+	while (GetMessage(&msg, NULL, 0, 0) )
+	{
+		//
+		//if(!IsDialogMessage(hwnd, &msg)) // Slow!
+		if (!TranslateAccelerator(hwnd, hAccelTable, &msg) && !IsDialogMessage(hwnd, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	WSACleanup();
+	return (int) msg.wParam;
+}
+
+int client_main (int argc, char const *argv[])
+{	
 	Services s;
 	// Connect
 	int sock = comm_connect("localhost");

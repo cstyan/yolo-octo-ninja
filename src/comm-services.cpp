@@ -184,4 +184,25 @@ int main(){
 
 
 }
+
+//// Utilities
+// Function parse_ip_port - parse ip and port fields from a string.
+// Interface: bool parse_ip_port (string& s, string& ip, unsigned short& port)
+//   s - reference to a string containing the "ip:port" to parse.
+//   ip - output of the resulting IP string.
+//   port - output of the resulting port.
+// Returns: boolean - true if parsing was successful, false otherwise.
+bool parse_ip_port (string& s, string& ip, unsigned short& port) {
+  stringstream ss( s );
+  if (ss.eof() || !getline( ss, ip, ':' )) 
+    return false;
+  // This can't be negative, but must allow all unsigned short values.
+  // desired behaviour: "-1" -> fail, "64000" -> 64000
+  // get string, check for negative sign and fail if there is one.
+  if (ss.eof() || !(ss >> port))
+      return false;
+  // Now we should be at end of input, if we're not, then fail.
+  return (ss.eof());
+}
+
 #endif

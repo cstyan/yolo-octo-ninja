@@ -8,6 +8,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include "resource.h"
 
 struct Services {
 	std::vector<std::string> songs;     // "filename1.wav"
@@ -16,8 +17,15 @@ struct Services {
 	Services () : microphone(false) {};
 };
 
+// Utilities
 void ParseServicesList(std::string list, Services& s);
 std::string ListServices(const Services& s);
 void printStruct(const Services& s);
+bool parse_ip_port (std::string& s, std::string& ip, unsigned short& port);
+
+// GUI
+void create_gui (HWND hWnd);
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd);
+ATOM MyRegisterClass(HINSTANCE hInstance);
 
 #endif

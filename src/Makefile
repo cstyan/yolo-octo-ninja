@@ -20,11 +20,11 @@ obj:
 	@echo "[75%] Compile and link client..."
 	@$(CC) $(CFLAGS) $(CLIENT_OBJECTS) $(LIBS) $(W) -o $@
 
-obj/client-res.o : resource.rc resource.h
+obj/client-res.o: resource.rc resource.h
 	@echo "[25%] Compile resources..."
 	@windres resource.rc $@
 
-clean :
+clean:
 	rm -rf ../client.exe ../server.exe obj/*
 
 obj/%.o: %.cpp commaudio.h resource.h

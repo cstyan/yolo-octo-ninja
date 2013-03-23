@@ -1,3 +1,6 @@
+#ifdef _MSC_VER
+#pragma comment(lib, "Ws2_32.lib")
+#endif
 #ifndef COMMAUDIO_H
 #define COMMAUDIO_H
 #define BUFSIZE 1024
@@ -9,6 +12,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include "resource.h"
+
 
 struct Services {
 	std::vector<std::string> songs;     // "filename1.wav"

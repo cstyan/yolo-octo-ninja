@@ -4,11 +4,13 @@
 
 using namespace std;
 
+Services s;
+DWORD WINAPI handle_client(LPVOID lpParameter);
+string recv_request(SOCKET s);
+
 void usage (char const *argv[]) {
 	cout << argv[0] << " [server] [port]" << endl;
 }
-
-Services s;
 
 int setup_listening (int port = 1337) {
 	SOCKET lsock;
@@ -53,11 +55,48 @@ void wait_for_connections (int lsock) {
 		// Start client handler
 		cout << "New client: " << inet_ntoa(client.sin_addr) << endl;
 		
-		// Generate services list.
-		string services = ListServices(s); 
-		
-		send(new_sd, services.data(), services.size(), 0);
+		if (CreateThread(NULL, 0, handle_client, (LPVOID)new_sd, 0, NULL) == NULL)
+			cerr << "Couldn't create client handler thread!" << endl;
 	}
+}
+
+DWORD WINAPI handle_client(LPVOID lpParameter) {
+	SOCKET client = (SOCKET) lpParameter;
+
+	while (true) {
+		string request = recv_request(client);
+
+		cout << "Client request: " << request << endl;
+
+		if (request == "list-services") {
+			// Generate services list.
+			string services = ListServices(s); 
+			
+			send(client, services.data(), services.size(), 0);
+		} else if (request.size() == 0) {
+			closesocket(client);
+			break;
+		}
+	}
+
+	return 0;
+}
+
+string recv_request (SOCKET client) {
+	string out;
+	char data[BUFSIZE];
+	while (true) {
+		int bytes_recv = recv(client, data, BUFSIZE, 0);
+		if (bytes_recv > 0) {
+			out.append(data, bytes_recv);
+			// Look for the terminating line
+			size_t n = out.find("\n");
+			out = out.substr(0, n);
+			// Found last line, break out.
+			if (n != string::npos) break;
+		} else break; // Connection closed, or error.
+	}
+	return out;
 }
 
 int main(int argc, char const *argv[])

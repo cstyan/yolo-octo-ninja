@@ -2,6 +2,8 @@
 #include "CommAudio.h"
 #include "server-file.h"
 #include "libzplay.h"
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace libZPlay;
@@ -11,6 +13,7 @@ Services s;
 struct ClientContext {
 	SOCKET control;
 	SOCKET udp;
+   SOCKET download;
 	sockaddr_in addr;
 };
 
@@ -20,9 +23,14 @@ void wait_for_connections (int lsock);
 string recv_request(SOCKET);
 DWORD WINAPI handle_client(LPVOID);
 void process_stream_song(ClientContext*, string);
+void process_download_file(ClientContext * ctx, string song);
+void procress_upload_song(ClientContext * ctx, string song);
+void procress_join_channel(ClientContext * ctx, string channel);
+void procress_join_voice(ClientContext * ctx);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
-
-
+istringstream read_file_to_stream(string path);
+void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
+bool validate_param(string param, SOCKET error_sock, string error_msg);
 
 /*
 * setup_listening (int port = 1337)
@@ -120,24 +128,22 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 		string req_command;
 		stringstream req_stream(request);
 		if (req_stream >> req_command) {
-			if (req_command == "D") {
-				string file;
-				if (req_stream >> file && file.size() != 0) {
-					cout << "Sending file data: " << file << endl;
-					//process_download_file(client, file);
-				} else {
-					send (client, "Invalid download file request: no file specified!", 49, 0);
-					closesocket(client); // Close this socket: client download creates a new socket. 
-				}
-			} else if (req_command == "S") {
-				string song;
-				if (req_stream >> song && song.size() != 0) {
-					cout << "Starting song stream: " << song << endl;
-					process_stream_song(ctx, song);
-				} else {
-					send (client, "Invalid stream song request: no song specified!", 49, 0);
-				}
-			}
+         if (req_command == "V") { // Parameterless
+            procress_join_voice(ctx);
+         }
+         else { // Parameterized
+            string param;
+            req_stream >> param;
+
+			   if (req_command == "D")
+               process_download_file(ctx, param);				
+			   else if (req_command == "S")
+				   process_stream_song(ctx, param);				
+			   else if (req_command == "U")
+               procress_upload_song(ctx, param);            
+            else if (req_command == "C")
+               procress_join_channel(ctx, param);  
+         }
 		}
 	}
 
@@ -178,6 +184,10 @@ string recv_request (SOCKET client) {
 * Returns the data received without the terminating newline.
 */
 void process_stream_song (ClientContext * ctx, string song) {
+   // Validate
+   if (validate_param(song, ctx->control, "Invalid stream song request: no song specified!"))
+      return;
+
 	// Create zplay Instance
 	ZPlay * out = CreateZPlay();
 
@@ -207,6 +217,144 @@ void process_stream_song (ClientContext * ctx, string song) {
 	}
 
 	return;
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   read_file_to_stream
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  istringstream read_file_to_stream (string path)
+--
+-- RETURNS: 
+--
+-- NOTES:      
+----------------------------------------------------------------------------------------------------------------------*/
+istringstream read_file_to_stream (string path) {
+   ifstream is(path.c_str(), ios::binary);
+
+   // Find length
+   is.seekg(0, std::ios::end);
+   long length = is.tellg();
+   is.seekg(0, std::ios::beg);
+   
+   // Allocate memory
+   char *data = new char[length];
+   
+   // Read into stream
+   is.read(data, length);
+   istringstream iss;
+   iss.str(string(data));
+
+   // Clean up
+   delete[] data;
+   is.close();
+
+   return iss;
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   transmit_from_stream
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  void transmit_from_stream (SOCKET sock, istringstream stream, streamsize packetSize)
+--
+-- RETURNS: 
+--
+-- NOTES:      
+----------------------------------------------------------------------------------------------------------------------*/
+void transmit_from_stream (SOCKET sock, istringstream& stream, streamsize packetSize) {
+   char buf[BUFSIZE];
+
+   while (stream.read(buf, BUFSIZE))
+      if (send(sock, buf, BUFSIZE, 0) < 0)
+      {
+         // TODO: error handling   
+      }
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   validate_param
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  bool validate_param(string param, SOCKET error_sock, string error_msg)
+--
+-- RETURNS:    true if non-empty string
+--
+-- NOTES:      Sends an error message to the specified socket on failure
+----------------------------------------------------------------------------------------------------------------------*/
+bool validate_param(string param, SOCKET error_sock, string error_msg) {
+   if (param.size() == 0) {
+      send(error_sock, error_msg.c_str(), error_msg.length(), 0);  
+      return false;
+   }
+
+   return true;
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   process_download_file
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  void process_download_file (ClientContext * ctx, string song)
+--
+-- RETURNS: 
+--
+-- NOTES:      Currently using control channel to transmit in order to match current client.
+--             Should be changed later to create separate socket.
+----------------------------------------------------------------------------------------------------------------------*/
+void process_download_file (ClientContext * ctx, string song) {
+   // Validate  
+   if (!validate_param(song, ctx->control, "Invalid download file request: no file specified!"))
+      return;
+				
+   cout << "Sending file data: " << song << endl;
+
+   // Read file into stringstream
+   istringstream iss = read_file_to_stream(song);
+      
+   // TODO: create new socket - client is using control channel currently
+   ctx->download = ctx->control;
+   
+   // Send file
+   transmit_from_stream(ctx->download, iss, BUFSIZE); 
+
+   // TODO: close socket that was created
+   //closesocket(ctx->download);
+}
+
+void procress_upload_song(ClientContext * ctx, string song) {
+   // Validate  
+   if (!validate_param(song, ctx->control, "Invalid upload file request: no file name specified!"))
+      return;
+}
+
+void procress_join_channel(ClientContext * ctx, string channel) {
+   // Validate  
+   if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
+      return;
+}
+
+void procress_join_voice(ClientContext * ctx) {   
 }
 
 /*

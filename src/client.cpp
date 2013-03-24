@@ -10,6 +10,10 @@ using namespace libZPlay;
 
 HINSTANCE hInst;
 
+int client_main (int argc, char const *argv[]);
+
+const string SERVICE_REQUEST_STRING = "list-services\n";
+
 int comm_connect (const char * host, int port = 1337) {
 	hostent	*hp;
 	sockaddr_in server;
@@ -37,6 +41,10 @@ int comm_connect (const char * host, int port = 1337) {
 	}
 
 	return sd;
+}
+
+void request_services(SOCKET sock) {   
+   send(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
 }
 
 string recv_services (int sd) {
@@ -133,6 +141,8 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
 
+   client_main(0, 0);
+
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0) )
 	{
@@ -155,6 +165,9 @@ int client_main (int argc, char const *argv[])
 	// Connect
 	int sock = comm_connect("localhost");
 	
+   // Request services
+   request_services(sock);
+
 	// Recv
 	string services = recv_services(sock);
 	
@@ -166,7 +179,7 @@ int client_main (int argc, char const *argv[])
 	
 	if (s.songs.size() >= 1) {
 		cout << "Downloading first song: " <<  s.songs[0] << endl;
-		downloadFile(1338, s.songs[0]);
+		downloadFile(1337, s.songs[0]); // TODO: change port to new channel
 		//uploadFile(1337);
 	}
 	

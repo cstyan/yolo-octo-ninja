@@ -220,44 +220,6 @@ void process_stream_song (ClientContext * ctx, string song) {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   read_file_to_stream
---
--- DATE:       Mar 23, 2013
---
--- DESIGNER:   Dennis Ho
---
--- PROGRAMMER: Dennis Ho
---
--- INTERFACE:  istringstream read_file_to_stream (string path)
---
--- RETURNS: 
---
--- NOTES:      
-----------------------------------------------------------------------------------------------------------------------*/
-istringstream read_file_to_stream (string path) {
-   ifstream is(path.c_str(), ios::binary);
-
-   // Find length
-   is.seekg(0, std::ios::end);
-   long length = is.tellg();
-   is.seekg(0, std::ios::beg);
-   
-   // Allocate memory
-   char *data = new char[length];
-   
-   // Read into stream
-   is.read(data, length);
-   istringstream iss;
-   iss.str(string(data));
-
-   // Clean up
-   delete[] data;
-   is.close();
-
-   return iss;
-}
-
-/*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   transmit_from_stream
 --
 -- DATE:       Mar 23, 2013
@@ -272,14 +234,14 @@ istringstream read_file_to_stream (string path) {
 --
 -- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
-void transmit_from_stream (SOCKET sock, istringstream& stream, streamsize packetSize) {
-   char buf[BUFSIZE];
+void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize) {
+	char buf[BUFSIZE];
 
-   while (stream.read(buf, BUFSIZE))
-      if (send(sock, buf, BUFSIZE, 0) < 0)
-      {
-         // TODO: error handling   
-      }
+	while (stream.read(buf, BUFSIZE))
+		if (send(sock, buf, BUFSIZE, 0) < 0)
+		{
+			// TODO: error handling
+		}
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -298,12 +260,12 @@ void transmit_from_stream (SOCKET sock, istringstream& stream, streamsize packet
 -- NOTES:      Sends an error message to the specified socket on failure
 ----------------------------------------------------------------------------------------------------------------------*/
 bool validate_param(string param, SOCKET error_sock, string error_msg) {
-   if (param.size() == 0) {
-      send(error_sock, error_msg.c_str(), error_msg.length(), 0);  
-      return false;
-   }
+	if (param.size() == 0) {
+	  send(error_sock, error_msg.c_str(), error_msg.length(), 0);
+	  return false;
+	}
 
-   return true;
+	return true;
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -323,35 +285,40 @@ bool validate_param(string param, SOCKET error_sock, string error_msg) {
 --             Should be changed later to create separate socket.
 ----------------------------------------------------------------------------------------------------------------------*/
 void process_download_file (ClientContext * ctx, string song) {
-   // Validate  
-   if (!validate_param(song, ctx->control, "Invalid download file request: no file specified!"))
-      return;
+	// Validate
+	if (!validate_param(song, ctx->control, "Invalid download file request: no file specified!"))
+	  return;
 				
-   cout << "Sending file data: " << song << endl;
+	cout << "Sending file data: " << song << endl;
 
-   // Read file into stringstream
-   istringstream iss = read_file_to_stream(song);
-      
-   // TODO: create new socket - client is using control channel currently
-   ctx->download = ctx->control;
-   
-   // Send file
-   transmit_from_stream(ctx->download, iss, BUFSIZE); 
+	// Read file into stringstream
+	ifstream f(song.c_str());
 
-   // TODO: close socket that was created
-   //closesocket(ctx->download);
+	if (!f) {
+		string error_msg("Invalid download file request: could not open file!");
+		send(ctx->control, error_msg.data(), error_msg.size(), 0);
+	}
+
+	// TODO: create new socket - client is using control channel currently
+	ctx->download = ctx->control;
+
+	// Send file
+	transmit_from_stream(ctx->download, f, BUFSIZE);
+
+	// TODO: close socket that was created
+	//closesocket(ctx->download);
 }
 
 void procress_upload_song(ClientContext * ctx, string song) {
-   // Validate  
-   if (!validate_param(song, ctx->control, "Invalid upload file request: no file name specified!"))
-      return;
+	// Validate
+	if (!validate_param(song, ctx->control, "Invalid upload file request: no file name specified!"))
+		return;
 }
 
 void procress_join_channel(ClientContext * ctx, string channel) {
-   // Validate  
-   if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
-      return;
+	// Validate
+	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
+		return;
 }
 
 void procress_join_voice(ClientContext * ctx) {   

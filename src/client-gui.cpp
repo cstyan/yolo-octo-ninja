@@ -4,9 +4,10 @@
 //	PROGRAMMERS:
 //		23-Mar-2013 - Kevin Tangeman - Created basic client GUI interface layout in Win32
 //
+#define _WIN32_IE 0x301
 #include "CommAudio.h"
 #include "resource.h"
-
+#include <commctrl.h>
 /* Easy styles enabler for msvc */
 #ifdef _MSC_VER
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' \

@@ -13,3 +13,7 @@
 *.la
 *.a
 *.exe
+
+# song files
+*.mp3
+*.flac

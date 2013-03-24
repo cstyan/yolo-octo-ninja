@@ -24,7 +24,7 @@ void mic_socket () {
 	struct hostent	*hp;
 	memset((char *)&server, 0, sizeof(struct sockaddr_in));
 	server.sin_family = AF_INET;
-	server.sin_port = htons(22);
+	server.sin_port = htons(1338);
 	if ((hp = gethostbyname("localhost")) == NULL)
 		throw ( "Unknown server address\n");
 
@@ -37,13 +37,19 @@ void mic_socket () {
 	// Bind local address to the socket
 	/**/memset((char *)&client, 0, sizeof(client));
 	client.sin_family = AF_INET;
-	client.sin_port = htons(0);  // bind to any available port
+	client.sin_port = htons(1338);  // listen back for the streaming data on 1338.
 	client.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(sock, (struct sockaddr *)&client, sizeof(client)) == -1) {
 		perror ("Can't bind name to socket");
 		exit(1);
 	}
+	sockaddr_in res = {0};
+	int thing = sizeof(sockaddr_in);
+	if (getsockname(sock, (sockaddr*)&res, &thing) == SOCKET_ERROR )
+		printf("error! %d\n", WSAGetLastError());
+	printf("client.sin_port: %d\n", ntohs(res.sin_port));
+
 }
 
 int main (int argc, char **argv) {
@@ -54,6 +60,7 @@ int main (int argc, char **argv) {
 	
 	// Create UDP socket for mic
 	mic_socket();
+
 	
 	//
 	// Create zplay instance for playing remote mic
@@ -73,15 +80,18 @@ int main (int argc, char **argv) {
 	
 
 	
-	sendto(sock, (const char *)"hi", 2, 0, (const struct sockaddr*)&server, sizeof(server));
+	//sendto(sock, (const char *)"hi", 2, 0, (const struct sockaddr*)&server, sizeof(server));
+	
 	netplay->Play();
 	// Mainloop: just recv() remote microphone data and push it to dynamic stream
 	while(1) {
 		char * buf = new char[65507];
 		
 		int size = sizeof(server);
+		printf("recv\n");
 		int r = recvfrom (sock, buf, 65507, 0, (sockaddr*)&server, &size);
-		if ( r == -1 ) {
+		printf("donerecv\n");
+		if ( r == -1 ) {	
 			int err = WSAGetLastError();
 			if (err == 10054)
 				printf("Concoction recent by Pier.\n"); // Connection reset by peer.

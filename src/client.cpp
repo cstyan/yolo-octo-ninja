@@ -5,14 +5,14 @@
 #include "client-file.h"
 #include "libzplay.h"
 
-#define SERVICE_REQUEST_STRING "list-services\n"
-
 using namespace std;
 using namespace libZPlay;
 
 HINSTANCE hInst;
 
 int client_main (int argc, char const *argv[]);
+
+const string SERVICE_REQUEST_STRING = "list-services\n";
 
 int comm_connect (const char * host, int port = 1337) {
 	hostent	*hp;
@@ -43,10 +43,8 @@ int comm_connect (const char * host, int port = 1337) {
 	return sd;
 }
 
-void request_services(SOCKET sock) {
-   char request_string[BUFSIZE] = SERVICE_REQUEST_STRING;
-
-   send(sock, request_string, BUFSIZE, 0);
+void request_services(SOCKET sock) {   
+   send(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
 }
 
 string recv_services (int sd) {

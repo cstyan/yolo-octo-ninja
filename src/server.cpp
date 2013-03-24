@@ -14,41 +14,15 @@ struct ClientContext {
 	sockaddr_in addr;
 };
 
-// Forward declarations.
+// Forward declarations. Only a couple of these are really needed, but all are listed for completeness
 int setup_listening (int port = 1337);
 void wait_for_connections (int lsock);
 string recv_request(SOCKET);
 DWORD WINAPI handle_client(LPVOID);
-SOCKET create_udp_socket ();
 void process_stream_song(ClientContext*, string);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
 
-/*
-* create_udp_socket () 
-* Notes: Create a UDP socket and bind it to an address provided by the system.
-* Returns the new UDP socket created
-*/
-SOCKET create_udp_socket () {
-	SOCKET sd;
-	sockaddr_in client;
 
-	// Create a datagram socket
-	if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-		cerr << "Could not create UDP socket!" << endl;
-	}
-
-	// Bind local address to the socket
-	memset((char *)&client, 0, sizeof(client));
-	client.sin_family = AF_INET;
-	client.sin_port = htons(0);  // bind to any available port
-	client.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (bind(sd, (struct sockaddr *)&client, sizeof(client)) == -1) {
-		cerr << "Could not bind udp socket" << endl;
-	}
-
-	return sd;
-}
 
 /*
 * setup_listening (int port = 1337)
@@ -185,9 +159,12 @@ string recv_request (SOCKET client) {
 			out.append(data, bytes_recv);
 			// Look for the terminating line
 			size_t n = out.find("\n");
-			out = out.substr(0, n);
+			
 			// Found last line, break out.
-			if (n != string::npos) break;
+			if (n != string::npos){
+				out = out.substr(0, n);
+				break;
+			} 
 		} else break; // Connection closed, or error.
 	}
 	return out;
@@ -213,7 +190,7 @@ void process_stream_song (ClientContext * ctx, string song) {
 	}
 
 	// Create UDP socket
-	ctx->udp = create_udp_socket();
+	ctx->udp = create_udp_socket(0);
 	ctx->addr.sin_port = htons(1338);
 
 	// decode song, send to client address
@@ -245,7 +222,7 @@ void process_stream_song (ClientContext * ctx, string song) {
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
-
+	
 	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
 		return 2;
 	

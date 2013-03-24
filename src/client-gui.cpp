@@ -10,6 +10,7 @@
 version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 
+DWORD WINAPI stream_song_proc(LPVOID lpParamter);
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 HWND g_Hwnd;
@@ -17,7 +18,7 @@ extern HINSTANCE hInst;	 // current instance from main.cpp
 
 void create_gui (HWND hWnd) {
   HFONT hFont;
-  HWND heInput;
+  //HWND heInput;
   // Create Input and Output Edit Text controls.
   hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
@@ -28,17 +29,17 @@ void create_gui (HWND hWnd) {
       5, 5, 220, 75, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
+  SendMessage (
+  CreateWindow("BUTTON", "Stream",
+      WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
+      100, 20, 40, 25, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
   /*SendMessage (
   CreateWindow("EDIT", "Procedural",
       WS_CHILD|WS_VISIBLE|ES_READONLY|ES_AUTOHSCROLL|ES_MULTILINE, 
       10, 25+1, 90, 27, hWnd, (HMENU)IDC_TXT_PTYPE, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
-  SendMessage (
-  CreateWindow("BUTTON", "File",
-      WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-      100, 20, 40, 25, hWnd, (HMENU)IDC_BTN_FILE, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("BUTTON", "Procedural",
@@ -129,6 +130,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case IDM_ABOUT:
       DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+      break;
+    case IDC_BTN_STREAM:
+      CreateThread(NULL, 0, stream_song_proc, NULL, 0, NULL);
       break;
     case IDM_EXIT:
       DestroyWindow(hWnd);

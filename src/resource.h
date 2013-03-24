@@ -14,7 +14,7 @@
 #define IDR_MAINFRAME                   128
 // Customize below per application
 #define IDM_FILE_MODE_CLIENT_TCP        130
-#define IDC_BTN_FILE                    200
+#define IDC_BTN_STREAM                    200
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

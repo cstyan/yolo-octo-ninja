@@ -3,12 +3,12 @@
 #include <cstdlib>
 #include "CommAudio.h"
 #include "client-file.h"
+#include "libzplay.h"
 
 using namespace std;
+using namespace libZPlay;
 
-void usage (char const *argv[]) {
-	cout << argv[0] << " [server] [port]" << endl;
-}
+HINSTANCE hInst;
 
 int comm_connect (const char * host, int port = 1337) {
 	hostent	*hp;
@@ -58,7 +58,61 @@ string recv_services (int sd) {
 	return out;
 }
 
-HINSTANCE hInst;
+void stream_song (string song) {
+	int sock = comm_connect("localhost");
+	int song_sock = create_udp_socket(1338);
+	
+	// Build request line
+	string request = "S " + song + "\n";
+	
+	send(sock, request.data(), request.size(), 0);
+
+	//
+	// Create zplay instance for playing remote mic
+	ZPlay * netplay = CreateZPlay();
+	netplay->SetSettings(sidSamplerate, 44100);// 44100 samples
+	netplay->SetSettings(sidChannelNumber, 2);// 2 channel
+	netplay->SetSettings(sidBitPerSample, 16);// 16 bit
+	netplay->SetSettings(sidBigEndian, 0); // little endian
+	int i;
+	// Remote microphone is a UDP "stream" of PCM data,
+	int result = netplay->OpenStream(1, 1, &i, 2, sfPCM); // we open the zplay stream without any real data, and start playback when we actually get input.
+	if(result == 0) {
+		cerr << "Error: " <<  netplay->GetError() << endl;
+		netplay->Release();
+		return;
+	}
+
+	netplay->Play();
+
+	// Mainloop: just recv() remote microphone data and push it to dynamic stream
+	while ( true ) {
+		// Create a buffer with maximum udp packet size, and recvfrom into it.
+		char * buf = new char[65507];
+		
+		sockaddr_in server;
+		int size = sizeof(server);
+		int r = recvfrom (song_sock, buf, 65507, 0, (sockaddr*)&server, &size);
+		if ( r == -1 ) {
+			int err = WSAGetLastError();
+			if (err == 10054)
+				printf("Concoction recent by Pier.\n"); // Connection reset by peer.
+			else printf("get last error %d\n", err);
+			break;
+		}
+		
+		printf("%lu got %d \n", GetTickCount(), r);
+		netplay->PushDataToStream(buf, r);
+		delete buf;
+		if (r == 0)
+			break;
+	}
+}
+
+DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
+	stream_song("tol.flac");
+	return 0;
+}
 
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;

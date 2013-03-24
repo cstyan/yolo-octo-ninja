@@ -2,6 +2,8 @@
 #include "CommAudio.h"
 #include "server-file.h"
 #include "libzplay.h"
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace libZPlay;
@@ -11,6 +13,7 @@ Services s;
 struct ClientContext {
 	SOCKET control;
 	SOCKET udp;
+   SOCKET download;
 	sockaddr_in addr;
 };
 
@@ -20,9 +23,10 @@ void wait_for_connections (int lsock);
 string recv_request(SOCKET);
 DWORD WINAPI handle_client(LPVOID);
 void process_stream_song(ClientContext*, string);
+void process_download_file(ClientContext * ctx, string song);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
-
-
+istringstream read_file_to_stream(string path);
+void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
 
 /*
 * setup_listening (int port = 1337)
@@ -124,7 +128,7 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 				string file;
 				if (req_stream >> file && file.size() != 0) {
 					cout << "Sending file data: " << file << endl;
-					//process_download_file(client, file);
+					process_download_file(ctx, file);
 				} else {
 					send (client, "Invalid download file request: no file specified!", 49, 0);
 					closesocket(client); // Close this socket: client download creates a new socket. 
@@ -207,6 +211,96 @@ void process_stream_song (ClientContext * ctx, string song) {
 	}
 
 	return;
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   read_file_to_stream
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  istringstream read_file_to_stream (string path)
+--
+-- RETURNS: 
+--
+-- NOTES:      
+----------------------------------------------------------------------------------------------------------------------*/
+istringstream read_file_to_stream (string path) {
+   ifstream is(path.c_str(), ios::binary);
+
+   // Find length
+   is.seekg(0, std::ios::end);
+   long length = is.tellg();
+   is.seekg(0, std::ios::beg);
+   
+   // Allocate memory
+   char *data = new char[length];
+   
+   // Read into stream
+   is.read(data, length);
+   istringstream iss;
+   iss.str(string(data));
+
+   // Clean up
+   delete[] data;
+   is.close();
+
+   return iss;
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   transmit_from_stream
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  void transmit_from_stream (SOCKET sock, istringstream stream, streamsize packetSize)
+--
+-- RETURNS: 
+--
+-- NOTES:      
+----------------------------------------------------------------------------------------------------------------------*/
+void transmit_from_stream (SOCKET sock, istringstream& stream, streamsize packetSize) {
+   char buf[BUFSIZE];
+
+   while (stream.read(buf, BUFSIZE))
+      if (send(sock, buf, BUFSIZE, 0) < 0)
+      {
+         // TODO: error handling   
+      }
+}
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   process_download_file
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  void process_download_file (ClientContext * ctx, string song)
+--
+-- RETURNS: 
+--
+-- NOTES:      Currently using control channel to transmit in order to match current client.
+--             Should be changed later to create separate socket.
+----------------------------------------------------------------------------------------------------------------------*/
+void process_download_file (ClientContext * ctx, string song) {
+   // Read file into stringstream
+   istringstream iss = read_file_to_stream(song);
+      
+   // TODO: create new socket - client is using control channel currently
+   ctx->download = ctx->control;
+   
+   // Send file
+   transmit_from_stream(ctx->download, iss, BUFSIZE); 
 }
 
 /*

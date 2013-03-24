@@ -1,6 +1,9 @@
 // Assignment 3 Client GUI
 // client-gui.cpp : Defines the window GUI initialization and creation code.
 //
+//	PROGRAMMERS:
+//		23-Mar-2013 - Kevin Tangeman - Created basic client GUI interface layout in Win32
+//
 #include "CommAudio.h"
 #include "resource.h"
 
@@ -22,85 +25,84 @@ void create_gui (HWND hWnd) {
   // Create Input and Output Edit Text controls.
   hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
-  ///////////// Packet Source controls.
+  // Setup to create a progress bar for playback, download, upload status
+  INITCOMMONCONTROLSEX InitCtrlEx;
+  InitCtrlEx.dwSize = sizeof(INITCOMMONCONTROLSEX);
+  InitCtrlEx.dwICC  = ICC_PROGRESS_CLASS;
+  InitCommonControlsEx(&InitCtrlEx);
+
+ SendMessage(
+    CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",	// progress bar
+	  WS_CHILD|WS_VISIBLE|PBS_SMOOTH, 
+	  50, 300, 600, 20, hWnd, NULL, hInst, NULL)
+	,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Prev button for play control
+    CreateWindow("BUTTON", "Prev",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      120, 265, 40, 20, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Play button for play control
+    CreateWindow("BUTTON", "Play",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      170, 260, 60, 30, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Next button for play control
+    CreateWindow("BUTTON", "Next",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      240, 265, 40, 20, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Mic button for using microphone
+    CreateWindow("BUTTON", "Chat",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      590, 260, 60, 30, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Download button for uploading files
+    CreateWindow("BUTTON", "Dn",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      315, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (							// Upload button for uploading files
+    CreateWindow("BUTTON", "Up",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      50, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
   SendMessage (
-  CreateWindow("BUTTON", "Packet Data Source:",
-      WS_CHILD|WS_VISIBLE|BS_GROUPBOX,
-      5, 5, 220, 75, hWnd, (HMENU)-1, NULL, NULL)
+  CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
+      WS_CHILD|WS_VISIBLE, 
+      50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
+      WS_CHILD|WS_VISIBLE, 
+      355, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("STATIC", "Song List",
+      WS_CHILD|WS_VISIBLE|SS_CENTER, 
+      50, 25, 295, 15, hWnd, (HMENU)-1, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("STATIC", "Channel List",
+      WS_CHILD|WS_VISIBLE|SS_CENTER, 
+      355, 25, 295, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("BUTTON", "Stream",
       WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-      100, 20, 40, 25, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+      470, 260, 60, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
-  /*SendMessage (
-  CreateWindow("EDIT", "Procedural",
-      WS_CHILD|WS_VISIBLE|ES_READONLY|ES_AUTOHSCROLL|ES_MULTILINE, 
-      10, 25+1, 90, 27, hWnd, (HMENU)IDC_TXT_PTYPE, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-
-  SendMessage (
-  CreateWindow("BUTTON", "Procedural",
-      WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-      155+2, 20, 65, 25, hWnd, (HMENU)IDC_BTN_PROC, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindow("STATIC", "Packet size:",
-      WS_CHILD|WS_VISIBLE, 
-      10, 53, 70, 15, hWnd, (HMENU)-1, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindow("STATIC", "B *             Pckts",
-      WS_CHILD|WS_VISIBLE, 
-      140, 53, 83, 15, hWnd, (HMENU)-1, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "1024", 
-    WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_GROUP | ES_AUTOHSCROLL | ES_NUMBER,
-    101, 50, 40-2, 20, hWnd, (HMENU)IDC_EDT_PSIZE, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "1024", 
-    WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_GROUP | ES_AUTOHSCROLL | ES_NUMBER,
-    155+3, 50, 35-2, 20, hWnd, (HMENU)IDC_EDT_PMULT, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-  //////////////////////////////////////////////////
-  ///////////// Destination and client controls.
-  SendMessage (
-    CreateWindow("BUTTON", "Destination:",
-      WS_CHILD|WS_VISIBLE|BS_GROUPBOX, 
-      5, 85, 220, 52, hWnd, (HMENU)-1, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  heInput  = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "127.0.0.1:1337", 
-    WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_GROUP,
-    15,  105, 200, 22, hWnd, (HMENU)IDC_EDT_DEST, NULL, NULL);
-  SendMessage (heInput,  WM_SETFONT, (WPARAM)hFont, TRUE);
-  //////////////////////////////////////////////////
-  ///////////// Statistics.
-  SendMessage (
-    CreateWindow("BUTTON", "Statistics:",
-      WS_CHILD|WS_VISIBLE|BS_GROUPBOX, 
-      5, 140, 220, 52, hWnd, (HMENU)-1, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);    
-
-  SendMessage (
-  CreateWindow("EDIT", "Ready...",
-      WS_CHILD|WS_VISIBLE|ES_READONLY, 
-      15, 160, 200, 15, hWnd, (HMENU)IDC_TXT_STATS, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindow("BUTTON", "Connect...",
-      WS_CHILD|WS_VISIBLE| WS_TABSTOP, 
-      5, 200, 220, 35, hWnd, (HMENU)IDC_BTN_GO, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);*/
+  
 }
 
 //
@@ -115,10 +117,17 @@ void create_gui (HWND hWnd) {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   int wmId, wmEvent;
+  HDC		hdc;
+  PAINTSTRUCT ps;
+  RECT	rect;
+  static HBRUSH hbrBkgnd;  // handle of background colour brush  
+  static COLORREF crBkgnd; // color of main window background 
 
   switch (message)
   {
   case WM_CREATE:
+	crBkgnd = RGB(102, 178, 255);				// set background colour for main window
+    hbrBkgnd = CreateSolidBrush(crBkgnd);		// create background brush with background colour
     create_gui ( hWnd );
     break;
   case WM_COMMAND:
@@ -141,6 +150,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       return DefWindowProc(hWnd, message, wParam, lParam);
     } 
     break;
+
+  case WM_PAINT:
+    hdc = BeginPaint(hWnd, &ps);
+	GetClientRect(hWnd, &rect);
+	FillRect(hdc, &rect, hbrBkgnd);
+
+	EndPaint(hWnd, &ps);
+	return 0;
+
   case WM_DESTROY:
     PostQuitMessage(0);
     break;
@@ -166,8 +184,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
 
    hInst = hInstance; // Store instance handle in our global variable
 
-   g_Hwnd = hWnd = CreateWindow("DCA1", "DCA2 Client", (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX),
-      CW_USEDEFAULT, 0, 235, 287, NULL, NULL, hInstance, NULL);
+   g_Hwnd = hWnd = CreateWindow("DCA3", "DJK Player", (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX),
+      CW_USEDEFAULT, 0, 700, 380, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -208,7 +226,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_DCWIN1);
-	wcex.lpszClassName	= "DCA1";
+	wcex.lpszClassName	= "DCA3";
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassEx(&wcex);

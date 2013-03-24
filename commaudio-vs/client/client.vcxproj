@@ -55,6 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);libzplay.lib</AdditionalDependencies>
+      <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -88,6 +89,9 @@
     <ClInclude Include="..\..\src\client-file.h" />
     <ClInclude Include="..\..\src\commaudio.h" />
     <ClInclude Include="..\..\src\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\commaudio.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

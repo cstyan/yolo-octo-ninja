@@ -1,4 +1,4 @@
-//{{NO_DEPENDENCIES}} 
+//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
@@ -12,9 +12,14 @@
 #define IDI_SMALL                       108
 #define IDC_DCWIN1                      109
 #define IDR_MAINFRAME                   128
-// Customize below per application
 #define IDM_FILE_MODE_CLIENT_TCP        130
-#define IDC_BTN_STREAM                    200
+#define IDC_BTN_STREAM                  200
+#define ID_FILE_EXIT                    40001
+#define ID_SONGS_PLAYSELECTEDSONG       40002
+#define ID_SONGS_DOWNLOADSELECTEDSONG   40003
+#define ID_SONGS_UPLOADSONGTOLIST       40004
+#define ID_CHANNELS_STREAMSELECTEDCHANNEL 40005
+#define ID_VOICECHAT_CHATWITHSERVER     40006
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -22,7 +27,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101
-#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_COMMAND_VALUE         40007
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

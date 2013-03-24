@@ -11,6 +11,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include <commctrl.h>
 #include "resource.h"
 
 // Services structure - contains information about available songs, channels, resources etc.

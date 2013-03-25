@@ -12,6 +12,7 @@ typedef struct temp
 	std::string file;
 } tempor;
 DWORD WINAPI DownloadThread(LPVOID lpParameter);
+tempor t;
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -39,13 +40,14 @@ bool downloadFile(int s, std::string filename)
 	
 	DataDownload.port = s;
 	strcpy(DataDownload.file, filename.c_str());
-		
-	tempor t;
-	t.file = filename;
-	t.tempData = DataDownload;
+	
+	t.file = filename.c_str();
 
 	if (SaveFile(&DataDownload))
+	{
+		t.tempData = DataDownload;
 		FileThread = CreateThread(NULL, 0, DownloadThread, (LPVOID)&t, 0, NULL);
+	}
 	return false;		
 }
 
@@ -117,8 +119,9 @@ bool SaveFile(uData* Download)
 
 DWORD WINAPI DownloadThread(LPVOID lpParameter)
 {
-	tempor* t = (tempor*) lpParameter;
-	if (Download(&t->tempData, t->file))
+	tempor* tt = (tempor*) lpParameter;
+	std::string filename = tt->file;
+	if (Download(&tt->tempData, filename))
 		return true;
 	return false;
 }

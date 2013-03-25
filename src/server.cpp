@@ -126,13 +126,14 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 		// Parse requests with commands (stream song request, download song request, etc)
 		string req_command;
 		stringstream req_stream(request);
-		if (req_stream >> req_command) {
+		if (req_stream >> req_command >> ws) {
 			if (req_command == "V") { // Parameterless
 				procress_join_voice(ctx);
 			}
 			else { // Parameterized
 				string param;
-				req_stream >> param;
+				// Get the rest of the line into param.
+				getline(req_stream, param); 
 
 				if (req_command == "D")
 					process_download_file(ctx, param);
@@ -349,7 +350,7 @@ void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	HANDLE hFind = FindFirstFile(file, &ffd);
 
 	do {
-		 songs.push_back(ffd.cFileName);
+		 songs.push_back(string(ffd.cFileName));
 	} while (FindNextFile(hFind, &ffd) != 0);
 	FindClose(hFind);
 }

@@ -21,7 +21,7 @@ version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' la
 DWORD WINAPI stream_song_proc(LPVOID lpParamter);
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
-HWND g_Hwnd;
+HWND g_Hwnd, slb, clb;
 extern HINSTANCE hInst;	 // current instance from main.cpp
 
 void create_gui (HWND hWnd) {
@@ -77,8 +77,6 @@ void create_gui (HWND hWnd) {
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
       50, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
-  
-  HWND slb, clb;
 
   SendMessage (
   slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
@@ -152,10 +150,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
   static HBRUSH hbrBkgnd;  // handle of background colour brush  
   static COLORREF crBkgnd; // color of main window background 
 
-  switch (message)
-  {
-  case WM_CREATE:
-	crBkgnd = RGB(102, 178, 255);				// set background colour for main window
+  switch (message) {
+  case WM_CREATE :
+	  crBkgnd = RGB(102, 178, 255);				// set background colour for main window
     hbrBkgnd = CreateSolidBrush(crBkgnd);		// create background brush with background colour
     create_gui ( hWnd );
     break;
@@ -164,30 +161,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     wmEvent = HIWORD(wParam);
     UNREFERENCED_PARAMETER(wmEvent);
     // Parse the menu selections:
-    switch (wmId)
-    {
-    case IDM_ABOUT:
-      DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-      break;
-    case IDC_BTN_STREAM:
-      CreateThread(NULL, 0, stream_song_proc, NULL, 0, NULL);
-      break;
-    case IDM_EXIT:
-      DestroyWindow(hWnd);
-      break;
-    default:
-      return DefWindowProc(hWnd, message, wParam, lParam);
+    switch (wmId) {
+      case IDM_ABOUT:
+        DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+        break;
+      case IDC_BTN_STREAM: {
+        int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
+        if (lbItem != LB_ERR) {
+          char* song_name = new char[BUFSIZE];
+          SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
+          cout << "Song selected" << song_name << endl;
+          CreateThread(NULL, 0, stream_song_proc, (LPVOID)song_name, 0, NULL);
+        }
+
+        break;
+      }
+      case IDM_EXIT:
+        DestroyWindow(hWnd);
+        break;
+      default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
     } 
     break;
-
-  case WM_PAINT:
+  case WM_PAINT  :
     hdc = BeginPaint(hWnd, &ps);
-	GetClientRect(hWnd, &rect);
-	FillRect(hdc, &rect, hbrBkgnd);
-
-	EndPaint(hWnd, &ps);
-	return 0;
-
+    GetClientRect(hWnd, &rect);
+    FillRect(hdc, &rect, hbrBkgnd);
+    EndPaint(hWnd, &ps);
+    return 0;
   case WM_DESTROY:
     PostQuitMessage(0);
     break;

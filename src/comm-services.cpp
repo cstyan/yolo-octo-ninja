@@ -46,7 +46,7 @@ void ParseServicesList(string list, Services& s)
 {
 	stringstream ss(list);
 	string token;
-	while (ss >> token) {
+	while (ss >> token >> ws) {
 		if (token == "S") {
 			string song;
 			if (getline(ss, song))

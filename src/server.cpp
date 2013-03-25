@@ -1,3 +1,4 @@
+#include <direct.h>
 #include <iostream>
 #include "CommAudio.h"
 #include "server-file.h"
@@ -13,7 +14,6 @@ Services s;
 struct ClientContext {
 	SOCKET control;
 	SOCKET udp;
-   SOCKET download;
 	sockaddr_in addr;
 };
 
@@ -28,7 +28,6 @@ void procress_upload_song(ClientContext * ctx, string song);
 void procress_join_channel(ClientContext * ctx, string channel);
 void procress_join_voice(ClientContext * ctx);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
-istringstream read_file_to_stream(string path);
 void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
 bool validate_param(string param, SOCKET error_sock, string error_msg);
 
@@ -300,11 +299,8 @@ void process_download_file (ClientContext * ctx, string song) {
 		send(ctx->control, error_msg.data(), error_msg.size(), 0);
 	}
 
-	// TODO: create new socket - client is using control channel currently
-	ctx->download = ctx->control;
-
 	// Send file
-	transmit_from_stream(ctx->download, f, BUFSIZE);
+	transmit_from_stream(ctx->control, f, BUFSIZE);
 
 	// TODO: close socket that was created
 	//closesocket(ctx->download);
@@ -347,6 +343,17 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 	return 1;
 }
 
+
+void add_files_to_songs (std::vector<string>& songs, const char * file) {
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(file, &ffd);
+
+	do {
+		 songs.push_back(ffd.cFileName);
+	} while (FindNextFile(hFind, &ffd) != 0);
+	FindClose(hFind);
+}
+
 int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session
@@ -356,13 +363,23 @@ int main(int argc, char const *argv[])
 	
 	// Initialize some services.
 	s.microphone = true;
-	s.songs.push_back("song1.mp3");
+	/*s.songs.push_back("tol.flac");
 	s.songs.push_back("song2.mp3");
-	s.songs.push_back("song3.mp3");
+	s.songs.push_back("song3.mp3");*/
+
+	char * u = getenv ("USERPROFILE");
+	string path(u);
+	path += "\\Music\\";
+	_chdir(path.c_str());
+
+	add_files_to_songs(s.songs, "*.mp3");
+	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
+
 	s.channels.push_back("The Peak");
 
 	int sock = setup_listening();
 	wait_for_connections (sock);
+	
 	
 	return 0;
 }

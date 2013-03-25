@@ -9,7 +9,6 @@ using namespace std;
 using namespace libZPlay;
 
 HINSTANCE hInst;
-
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
 int comm_connect (const char * host, int port) {
@@ -118,7 +117,8 @@ void stream_song (string song) {
 }
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
-	stream_song("tol.flac");
+	char * song_name = (char *) lpParamter;
+	stream_song(song_name);
 	return 0;
 }
 
@@ -156,31 +156,4 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 
 	WSACleanup();
 	return (int) msg.wParam;
-}
-
-int client_main (int argc, char const *argv[])
-{	
-	Services s;
-	// Connect
-	int sock = comm_connect("localhost");
-	
-	// Request services
-	request_services(sock);
-
-	// Recv
-	string services = recv_services(sock);
-	
-	// Parse
-	ParseServicesList(services, s);
-	
-	// Display
-	printStruct(s);
-	
-	if (s.songs.size() >= 1) {
-		cout << "Downloading first song: " <<  s.songs[0] << endl;
-		downloadFile(1337, s.songs[0]); // TODO: change port to new channel
-		//uploadFile(1337);
-	}
-	
-	return 0;
 }

@@ -10,11 +10,9 @@ using namespace libZPlay;
 
 HINSTANCE hInst;
 
-int client_main (int argc, char const *argv[]);
-
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
-int comm_connect (const char * host, int port = 1337) {
+int comm_connect (const char * host, int port) {
 	hostent	*hp;
 	sockaddr_in server;
 	SOCKET sd = socket(AF_INET, SOCK_STREAM, 0);
@@ -115,6 +113,8 @@ void stream_song (string song) {
 		if (r == 0)
 			break;
 	}
+
+	closesocket(song_sock);
 }
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {

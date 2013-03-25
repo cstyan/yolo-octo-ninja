@@ -49,11 +49,11 @@ void ParseServicesList(string list, Services& s)
 	while (ss >> token) {
 		if (token == "S") {
 			string song;
-			if (ss >> song)
+			if (getline(ss, song))
 				s.songs.push_back(song);
 		} else if (token == "C") {
 			string channel;
-			if (ss >> channel)
+			if (getline(ss, channel))
 				s.channels.push_back(channel);
 		} else if (token == "M") {
 			string mic;

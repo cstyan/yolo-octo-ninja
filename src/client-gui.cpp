@@ -8,6 +8,10 @@
 #include "CommAudio.h"
 #include "resource.h"
 #include <commctrl.h>
+#include <string>
+
+using namespace std;
+
 /* Easy styles enabler for msvc */
 #ifdef _MSC_VER
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' \
@@ -73,15 +77,17 @@ void create_gui (HWND hWnd) {
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
       50, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
+  
+  HWND slb, clb;
 
   SendMessage (
-  CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
+  slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
       WS_CHILD|WS_VISIBLE, 
       50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
-  CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
+  clb = CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
       WS_CHILD|WS_VISIBLE, 
       355, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
@@ -103,7 +109,29 @@ void create_gui (HWND hWnd) {
       WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
       470, 260, 60, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
   
+
+  Services s;
+  // Connect
+  int sock = comm_connect("localhost");
+
+  // Request services
+  request_services(sock);
+
+  // Recv
+  string services = recv_services(sock);
+
+  // Parse
+  ParseServicesList(services, s);
+
+  for (size_t i = 0; i < s.songs.size(); ++i) {
+    SendMessage(slb, LB_ADDSTRING, 0, (LPARAM)s.songs[i].c_str());
+  }
+
+  for (size_t i = 0; i < s.channels.size(); ++i) {
+    SendMessage(clb, LB_ADDSTRING, 0, (LPARAM)s.channels[i].c_str());
+  }
 }
 
 //

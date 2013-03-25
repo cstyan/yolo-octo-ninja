@@ -128,22 +128,22 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 		string req_command;
 		stringstream req_stream(request);
 		if (req_stream >> req_command) {
-         if (req_command == "V") { // Parameterless
-            procress_join_voice(ctx);
-         }
-         else { // Parameterized
-            string param;
-            req_stream >> param;
+			if (req_command == "V") { // Parameterless
+				procress_join_voice(ctx);
+			}
+			else { // Parameterized
+				string param;
+				req_stream >> param;
 
-			   if (req_command == "D")
-               process_download_file(ctx, param);				
-			   else if (req_command == "S")
-				   process_stream_song(ctx, param);				
-			   else if (req_command == "U")
-               procress_upload_song(ctx, param);            
-            else if (req_command == "C")
-               procress_join_channel(ctx, param);  
-         }
+				if (req_command == "D")
+					process_download_file(ctx, param);
+				else if (req_command == "S")
+					process_stream_song(ctx, param);
+				else if (req_command == "U")
+					procress_upload_song(ctx, param);            
+				else if (req_command == "C")
+					procress_join_channel(ctx, param);
+			}
 		}
 	}
 
@@ -184,9 +184,10 @@ string recv_request (SOCKET client) {
 * Returns the data received without the terminating newline.
 */
 void process_stream_song (ClientContext * ctx, string song) {
-   // Validate
-   if (validate_param(song, ctx->control, "Invalid stream song request: no song specified!"))
-      return;
+	cout << "Streaming song: " << song << endl;
+	// Validate
+	if (!validate_param(song, ctx->control, "Invalid stream song request: no song specified!"))
+		return;
 
 	// Create zplay Instance
 	ZPlay * out = CreateZPlay();
@@ -337,7 +338,7 @@ void procress_join_voice(ClientContext * ctx) {
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
-	
+
 	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
 		return 2;
 	
@@ -358,6 +359,7 @@ int main(int argc, char const *argv[])
 	s.songs.push_back("song1.mp3");
 	s.songs.push_back("song2.mp3");
 	s.songs.push_back("song3.mp3");
+	s.channels.push_back("The Peak");
 
 	int sock = setup_listening();
 	wait_for_connections (sock);

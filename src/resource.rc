@@ -40,7 +40,7 @@ IDC_DCWIN1 MENU
 BEGIN
     POPUP "File"
     BEGIN
-        MENUITEM "Exit",                        ID_FILE_EXIT
+        MENUITEM "Exit",                        IDM_EXIT
     END
     POPUP "Songs"
     BEGIN

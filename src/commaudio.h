@@ -25,6 +25,11 @@ struct Services {
 // Common Networking
 SOCKET create_udp_socket (int port = 0);
 
+// Client Networking
+int comm_connect (const char * host, int port = 1337);
+void request_services(SOCKET sock);
+std::string recv_services (int sd);
+
 // Utilities
 void ParseServicesList(std::string list, Services& s);
 std::string ListServices(const Services& s);

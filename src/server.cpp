@@ -298,7 +298,7 @@ void process_download_file (ClientContext * ctx, string song) {
 	cout << "Sending file data: " << song << endl;
 
 	// Read file into stringstream
-	ifstream f(song.c_str());
+	ifstream f(song.c_str(), ifstream::binary);
 
 	if (!f) {
 		string error_msg("Invalid download file request: could not open file!");

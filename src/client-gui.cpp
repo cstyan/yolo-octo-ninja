@@ -10,6 +10,7 @@
 #include "client-file.h"
 #include <commctrl.h>
 #include <string>
+#include "libzplay.h"
 
 using namespace std;
 
@@ -21,7 +22,9 @@ version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' la
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter);
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+void get_and_display_services(int control);
 
+int sock;
 HWND g_Hwnd, slb, clb;
 extern HINSTANCE hInst;	 // current instance from main.cpp
 
@@ -64,7 +67,7 @@ void create_gui (HWND hWnd) {
   SendMessage (							// Mic button for using microphone
     CreateWindow("BUTTON", "Chat",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      590, 260, 60, 30, hWnd, (HMENU)-1, NULL, NULL)
+      590, 260, 60, 30, hWnd, (HMENU)ID_VOICECHAT_CHATWITHSERVER, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Download button for uploading files
@@ -111,26 +114,34 @@ void create_gui (HWND hWnd) {
 
   
 
-  Services s;
+  
   // Connect
-  int sock = comm_connect("localhost");
+  sock = comm_connect("localhost");
+  get_and_display_services(sock);
+}
 
-  // Request services
-  request_services(sock);
+void get_and_display_services(int control) {
+	// Clear List boxes.
+	SendMessage(slb, LB_RESETCONTENT, 0, 0);
+	SendMessage(clb, LB_RESETCONTENT, 0, 0);
 
-  // Recv
-  string services = recv_services(sock);
+	Services s;
+	// Request services
+	request_services(control);
 
-  // Parse
-  ParseServicesList(services, s);
+	// Recv
+	string services = recv_services(control);
 
-  for (size_t i = 0; i < s.songs.size(); ++i) {
-    SendMessage(slb, LB_ADDSTRING, 0, (LPARAM)s.songs[i].c_str());
-  }
+	// Parse
+	ParseServicesList(services, s);
 
-  for (size_t i = 0; i < s.channels.size(); ++i) {
-    SendMessage(clb, LB_ADDSTRING, 0, (LPARAM)s.channels[i].c_str());
-  }
+	for (size_t i = 0; i < s.songs.size(); ++i) {
+		SendMessage(slb, LB_ADDSTRING, 0, (LPARAM)s.songs[i].c_str());
+	}
+
+	for (size_t i = 0; i < s.channels.size(); ++i) {
+		SendMessage(clb, LB_ADDSTRING, 0, (LPARAM)s.channels[i].c_str());
+	}
 }
 
 //
@@ -177,6 +188,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         break;
 	  }
+	  case ID_VOICECHAT_CHATWITHSERVER:
+		  get_and_display_services(sock);
+		  break;
 	  case ID_SONGS_UPLOADSONGTOLIST:
 		  uploadFile(1338);
 		  break;
@@ -282,6 +296,15 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_INITDIALOG:
+		{
+			string zplay("Libzplay Version: ");
+			libZPlay::ZPlay* zp = libZPlay::CreateZPlay();
+			stringstream ss;
+			ss << (double) (zp->GetVersion()/100.0);
+			zplay += ss.str();
+
+			SendMessage( GetDlgItem(hDlg, IDC_LIBZPLAY_VERSION), WM_SETTEXT, NULL, (LPARAM) zplay.c_str());
+		}
 		return (INT_PTR)TRUE;
 
 	case WM_COMMAND:

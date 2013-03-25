@@ -2,8 +2,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #ifndef COMMAUDIO_H
-#define COMMAUDIO_H
-#define BUFSIZE 1024
+#define COMMAUDIO_Hs
 #include <sstream>
 #include <iostream>
 #include <vector>

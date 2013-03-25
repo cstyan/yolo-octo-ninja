@@ -30,6 +30,7 @@ void procress_join_voice(ClientContext * ctx);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
 void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
 bool validate_param(string param, SOCKET error_sock, string error_msg);
+void add_files_to_songs (std::vector<string>& songs, const char * file);
 
 /*
 * setup_listening (int port = 1337)
@@ -116,6 +117,10 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 			closesocket(client);
 			break;
 		} else if (request == "list-services") {
+			// Clear songs
+			s.songs.clear();
+			// Find songs
+			add_files_to_songs(s.songs, "*.flac");
 			// Generate services list.
 			string services = ListServices(s); 
 			// Send the list of services.
@@ -348,11 +353,12 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(file, &ffd);
-
-	do {
-		 songs.push_back(string(ffd.cFileName));
-	} while (FindNextFile(hFind, &ffd) != 0);
-	FindClose(hFind);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			 songs.push_back(string(ffd.cFileName));
+		} while (FindNextFile(hFind, &ffd) != 0);
+		FindClose(hFind);
+	}
 }
 
 int main(int argc, char const *argv[])
@@ -373,9 +379,8 @@ int main(int argc, char const *argv[])
 	path += "\\Music\\";
 	_chdir(path.c_str());
 
-	add_files_to_songs(s.songs, "*.mp3");
+	add_files_to_songs(s.songs, "*.flac");
 	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
-
 	s.channels.push_back("The Peak");
 
 	int sock = setup_listening();

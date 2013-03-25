@@ -14,6 +14,8 @@
 #define IDR_MAINFRAME                   128
 #define IDM_FILE_MODE_CLIENT_TCP        130
 #define IDC_BTN_STREAM                  200
+#define IDC_LIBZPLAY_VERSION            1000
+#define BUFSIZE                         1024
 #define ID_SONGS_PLAYSELECTEDSONG       40002
 #define ID_SONGS_DOWNLOADSELECTEDSONG   40003
 #define ID_SONGS_UPLOADSONGTOLIST       40004
@@ -27,7 +29,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

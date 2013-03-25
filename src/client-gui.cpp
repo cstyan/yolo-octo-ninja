@@ -7,6 +7,7 @@
 #define _WIN32_IE 0x301
 #include "CommAudio.h"
 #include "resource.h"
+#include "client-file.h"
 #include <commctrl.h>
 #include <string>
 
@@ -79,9 +80,9 @@ void create_gui (HWND hWnd) {
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
-  slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
-      WS_CHILD|WS_VISIBLE, 
-      50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+	  slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
+		  WS_CHILD|WS_VISIBLE, 
+		  50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
@@ -175,7 +176,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         break;
-      }
+	  }
+	  case ID_SONGS_UPLOADSONGTOLIST:
+		  uploadFile(1338);
+		  break;
+	  case ID_SONGS_DOWNLOADSELECTEDSONG: {
+		  int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
+		  if (lbItem != LB_ERR) {
+			  char* song_name = new char[BUFSIZE];
+			  SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
+			  downloadFile(1337, song_name);
+		  }
+		  break;
+	  }
       case IDM_EXIT:
         DestroyWindow(hWnd);
         break;

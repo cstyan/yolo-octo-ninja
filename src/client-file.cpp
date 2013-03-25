@@ -6,6 +6,13 @@
 #include "commaudio.h"
 #include "client-file.h"
 
+typedef struct temp 
+{
+	uData tempData;
+	std::string file;
+} tempor;
+DWORD WINAPI DownloadThread(LPVOID lpParameter);
+
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
 --
@@ -32,11 +39,13 @@ bool downloadFile(int s, std::string filename)
 	
 	DataDownload.port = s;
 	strcpy(DataDownload.file, filename.c_str());
-	
-	if (SaveFile(&DataDownload))
-		if (Download(&DataDownload, filename))
-			return true;
+		
+	tempor t;
+	t.file = filename;
+	t.tempData = DataDownload;
 
+	if (SaveFile(&DataDownload))
+		FileThread = CreateThread(NULL, 0, DownloadThread, (LPVOID)&t, 0, NULL);
 	return false;		
 }
 
@@ -68,7 +77,6 @@ void uploadFile(int s)
 	
 	if (SelectFile(&upload))
 		FileThread = CreateThread(NULL, 0, UploadThread, (LPVOID)&upload, 0, NULL);
-	WaitForSingleObject(FileThread, INFINITE);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -104,6 +112,14 @@ bool SaveFile(uData* Download)
     {
         return true;
     }
+	return false;
+}
+
+DWORD WINAPI DownloadThread(LPVOID lpParameter)
+{
+	tempor* t = (tempor*) lpParameter;
+	if (Download(&t->tempData, t->file))
+		return true;
 	return false;
 }
 

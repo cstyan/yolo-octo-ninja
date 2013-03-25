@@ -141,7 +141,6 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
 
-   client_main(0, 0);
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0) )
@@ -165,8 +164,8 @@ int client_main (int argc, char const *argv[])
 	// Connect
 	int sock = comm_connect("localhost");
 	
-   // Request services
-   request_services(sock);
+	// Request services
+	request_services(sock);
 
 	// Recv
 	string services = recv_services(sock);

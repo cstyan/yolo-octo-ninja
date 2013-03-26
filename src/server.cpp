@@ -244,12 +244,12 @@ void process_stream_song (ClientContext * ctx, string song) {
 ----------------------------------------------------------------------------------------------------------------------*/
 void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize) {
 	char buf[BUFSIZE];
-
-	while (stream.read(buf, BUFSIZE))
-		if (send(sock, buf, BUFSIZE, 0) < 0)
-		{
+	while (!stream.eof()) {
+		stream.read(buf, BUFSIZE);
+		if (send(sock, buf, stream.gcount(), 0) < 0) {
 			// TODO: error handling
 		}
+	}
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -311,7 +311,7 @@ void process_download_file (ClientContext * ctx, string song) {
 	transmit_from_stream(ctx->control, f, BUFSIZE);
 
 	// TODO: close socket that was created
-	//closesocket(ctx->download);
+	closesocket(ctx->control);
 }
 
 void procress_upload_song(ClientContext * ctx, string song) {

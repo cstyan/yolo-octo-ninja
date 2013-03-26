@@ -244,12 +244,15 @@ void process_stream_song (ClientContext * ctx, string song) {
 ----------------------------------------------------------------------------------------------------------------------*/
 void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize) {
 	char buf[BUFSIZE];
+	size_t s = 0;
 	while (!stream.eof()) {
 		stream.read(buf, BUFSIZE);
 		if (send(sock, buf, stream.gcount(), 0) < 0) {
 			// TODO: error handling
 		}
+		s += stream.gcount();
 	}
+	cout << "Sent " << s << endl;
 }
 
 /*------------------------------------------------------------------------------------------------------------------

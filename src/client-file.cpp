@@ -266,7 +266,7 @@ bool Download(uData* Download, std::string filename)
 
 		WSAGetOverlappedResult(SI->Socket, &SI->Overlapped, &error1, FALSE, &flag);
 		//WriteFile(hFile, SI->DataBuf.buf, error1, &BytesWritten, NULL);
-		fwrite(SI->DataBuf.buf, 1, SI->DataBuf.len, hFile);
+		fwrite(SI->DataBuf.buf, 1, error1, hFile);
 		WSAResetEvent(SI->Overlapped.hEvent);
 	}
 

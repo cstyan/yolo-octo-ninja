@@ -49,19 +49,19 @@ void create_gui (HWND hWnd) {
   SendMessage (							// Prev button for play control
     CreateWindow("BUTTON", "Prev",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      120, 265, 40, 20, hWnd, (HMENU)-1, NULL, NULL)
+      120, 265, 40, 20, hWnd, (HMENU)IDC_BTN_PREV, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Play button for play control
     CreateWindow("BUTTON", "Play",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      170, 260, 60, 30, hWnd, (HMENU)-1, NULL, NULL)
+      170, 260, 60, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Next button for play control
     CreateWindow("BUTTON", "Next",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      240, 265, 40, 20, hWnd, (HMENU)-1, NULL, NULL)
+      240, 265, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Mic button for using microphone
@@ -70,16 +70,16 @@ void create_gui (HWND hWnd) {
       590, 260, 60, 30, hWnd, (HMENU)ID_VOICECHAT_CHATWITHSERVER, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
-  SendMessage (							// Download button for uploading files
+  SendMessage (							// Download button for downloading files
     CreateWindow("BUTTON", "Dn",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      315, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
+      315, 260, 30, 30, hWnd, (HMENU)IDC_BTN_DOWNLOAD, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Upload button for uploading files
     CreateWindow("BUTTON", "Up",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      50, 260, 30, 30, hWnd, (HMENU)-1, NULL, NULL)
+      50, 260, 30, 30, hWnd, (HMENU)IDC_BTN_UPLOAD, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (

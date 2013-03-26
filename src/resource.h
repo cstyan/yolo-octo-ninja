@@ -14,6 +14,12 @@
 #define IDR_MAINFRAME                   128
 #define IDM_FILE_MODE_CLIENT_TCP        130
 #define IDC_BTN_STREAM                  200
+#define	IDC_BTN_PREV					201
+#define	IDC_BTN_PLAY					202
+#define	IDC_BTN_NEXT					203
+#define	IDC_BTN_DOWNLOAD				204
+#define	IDC_BTN_UPLOAD					205
+
 #define IDC_LIBZPLAY_VERSION            1000
 #define BUFSIZE                         1024
 #define ID_SONGS_PLAYSELECTEDSONG       40002

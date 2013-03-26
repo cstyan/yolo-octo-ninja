@@ -83,15 +83,15 @@ void create_gui (HWND hWnd) {
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
-	  slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
-		  WS_CHILD|WS_VISIBLE, 
-		  50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+	slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
+		WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
+		50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
-  clb = CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
-      WS_CHILD|WS_VISIBLE, 
-      355, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+	clb = CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
+		WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
+		355, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (

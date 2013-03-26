@@ -117,6 +117,22 @@ bool SaveFile(uData* Download)
 	return false;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: DownloadThread
+--
+-- DATE: Mar 26, 2013
+--
+-- DESIGNER:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner
+--
+-- INTERFACE: DWORD WINAPI DownloadThread(LPVOID lpParameter)
+--
+-- RETURNS: DWORD.
+--
+-- NOTES:
+-- The thread that begins the downloading process.
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI DownloadThread(LPVOID lpParameter)
 {
 	tempor* tt = (tempor*) lpParameter;
@@ -144,7 +160,7 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter)
 ----------------------------------------------------------------------------------------------------------------------*/
 bool Download(uData* Download, std::string filename)
 {
-	HANDLE hFile;
+	//HANDLE hFile;
 	int port, err;
 	SOCKET sd;
 	struct hostent	*hp;
@@ -152,7 +168,7 @@ bool Download(uData* Download, std::string filename)
 	char sbuf[BUFSIZE];
 	WSADATA WSAData;
 	WORD wVersionRequested;
-	FILE * fp;
+	FILE * hFile;
 	LPSOCKET_INFORMATION SI;
 	DWORD BytesWritten;
 	
@@ -202,8 +218,6 @@ bool Download(uData* Download, std::string filename)
 		return false;
 	}
 
-	fp = fopen(Download->file, "rb");
-
 	setsockopt(sd, SOL_SOCKET, SO_LINGER, (const char*) &so_linger, sizeof(so_linger));
 
 	if ((SI = (LPSOCKET_INFORMATION) GlobalAlloc(GPTR, sizeof(SOCKET_INFORMATION))) == NULL)
@@ -230,9 +244,9 @@ bool Download(uData* Download, std::string filename)
 	DWORD error1 = 1, error2 = 0, error3 = 0;
 
 	printf("Opening: %s\n", Download->file);
-	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == (HANDLE) ERROR_INVALID_HANDLE) {
-		printf("Could not CreateFile: %d\n", GetLastError());
+	hFile = fopen(Download->file, "wb");
+	if (hFile == NULL) {
+		printf("Could not fopen\n");
 	}
 	int count = 0;
 	memset(sbuf, 0, sizeof(sbuf));
@@ -251,11 +265,12 @@ bool Download(uData* Download, std::string filename)
 			break;
 
 		WSAGetOverlappedResult(SI->Socket, &SI->Overlapped, &error1, FALSE, &flag);
-		WriteFile(hFile, SI->DataBuf.buf, error1, &BytesWritten, NULL);
+		//WriteFile(hFile, SI->DataBuf.buf, error1, &BytesWritten, NULL);
+		fwrite(SI->DataBuf.buf, 1, SI->DataBuf.len, hFile);
 		WSAResetEvent(SI->Overlapped.hEvent);
 	}
 
-	CloseHandle(hFile);
+	fclose(hFile);
 	closesocket(sd);
 	WSACleanup();
 	return true;

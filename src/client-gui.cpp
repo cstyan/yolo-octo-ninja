@@ -116,7 +116,7 @@ void create_gui (HWND hWnd) {
 
   
   // Connect
-  sock = comm_connect("localhost");
+  sock = comm_connect(server);
   get_and_display_services(sock);
 }
 

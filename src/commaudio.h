@@ -23,6 +23,7 @@ struct Services {
 
 // Common Networking
 SOCKET create_udp_socket (int port = 0);
+extern char * server;
 
 // Client Networking
 int comm_connect (const char * host, int port = 1337);

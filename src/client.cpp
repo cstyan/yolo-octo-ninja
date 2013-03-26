@@ -8,6 +8,9 @@
 using namespace std;
 using namespace libZPlay;
 
+// The Server to connect to 
+char * server = "142.232.138.86";
+
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
@@ -64,7 +67,7 @@ string recv_services (int sd) {
 }
 
 void stream_song (string song) {
-	int sock = comm_connect("localhost");
+	int sock = comm_connect(server);
 	int song_sock = create_udp_socket(1338);
 	
 	// Build request line

@@ -117,10 +117,12 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 			closesocket(client);
 			break;
 		} else if (request == "list-services") {
+			// refresh-services
 			// Clear songs
-			s.songs.clear();
+			//s.songs.clear();
 			// Find songs
-			add_files_to_songs(s.songs, "*.flac");
+			//find_songs(s.songs)
+
 			// Generate services list.
 			string services = ListServices(s); 
 			// Send the list of services.
@@ -361,6 +363,22 @@ void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	}
 }
 
+void find_songs (std::vector<string>& songs) {
+	char songtypes[][7] = {
+		{"*.flac"},
+		{"*.mp3"},
+		{"*.wav"},
+		{"*.ogg"},
+		{"*.ac3"}
+	};
+
+	// Look for any of the above file types and add them to the songs list.
+	for (int i = 0; i < sizeof(songtypes); ++i)
+	{
+		add_files_to_songs(songs, songtypes[i]);
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session
@@ -379,7 +397,7 @@ int main(int argc, char const *argv[])
 	path += "\\Music\\";
 	_chdir(path.c_str());
 
-	add_files_to_songs(s.songs, "*.flac");
+	find_songs(s.songs);
 	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
 	s.channels.push_back("The Peak");
 

@@ -222,14 +222,18 @@ bool Download(uData* Download, std::string filename)
 
 	SI->DataBuf.buf = sbuf;
 	/* sending the download message to the server */
-	int ret = sprintf(sbuf, "D %s\r\n", filename.c_str());
+	int ret = sprintf(sbuf, "D %s\n", filename.c_str());
 	SI->DataBuf.len = ret;
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 
 	DWORD flag = 0;
 	DWORD error1 = 1, error2 = 0, error3 = 0;
 
+	printf("Opening: %s\n", Download->file);
 	hFile = CreateFile(Download->file, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == (HANDLE) ERROR_INVALID_HANDLE) {
+		printf("Could not CreateFile: %d\n", GetLastError());
+	}
 	int count = 0;
 	memset(sbuf, 0, sizeof(sbuf));
 

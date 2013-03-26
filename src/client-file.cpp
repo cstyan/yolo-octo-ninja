@@ -242,7 +242,7 @@ bool Download(uData* Download, std::string filename)
 		if (error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
 			break;
 
-		ret = WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, INFINITE, TRUE);
+		ret = WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, 500, TRUE);
 		if (ret == WSA_WAIT_TIMEOUT || ret == WSA_WAIT_IO_COMPLETION)
 			break;
 

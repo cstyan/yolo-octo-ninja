@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to 
-char * server = "localhost";
+char * server = "192.168.0.12";
 
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
@@ -142,7 +142,7 @@ ChannelInfo extractChannelInfo(const string& channel) {
    return ci;
 }
 
-void join_channel() {
+DWORD WINAPI join_channel(LPVOID lpParamter) {
    int error;
    bool reuseFlag = false;
    SOCKADDR_IN localAddr, sourceAddr;
@@ -191,7 +191,7 @@ void join_channel() {
 	if(result == 0) {
 		cerr << "Error: " <<  netplay->GetError() << endl;
 		netplay->Release();
-		return;
+		return 1;
 	}
 
 	netplay->Play();
@@ -217,6 +217,8 @@ void join_channel() {
 		if (r == 0)
 			break;
 	}   
+
+   return 0;
 }
 
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
@@ -237,7 +239,7 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
-      
+
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0) )
 	{

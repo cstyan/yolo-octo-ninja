@@ -21,6 +21,7 @@ version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' la
 #endif
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter);
+DWORD WINAPI join_channel(LPVOID lpParamter);
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 void get_and_display_services(int control);
 
@@ -206,6 +207,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
         }
+	  case IDC_BTN_STREAM:
+	  case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
+		int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
+		if (lbItem != LB_ERR) {
+      		char* channel = new char[BUFSIZE];
+      		SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);      		
+			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+		break;
+		}
       case IDM_EXIT:
         DestroyWindow(hWnd);
         break;

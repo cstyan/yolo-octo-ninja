@@ -67,7 +67,7 @@ void create_gui (HWND hWnd) {
   SendMessage (							// Mic button for using microphone
     CreateWindow("BUTTON", "Chat",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      590, 260, 60, 30, hWnd, (HMENU)ID_VOICECHAT_CHATWITHSERVER, NULL, NULL)
+      590, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Download button for downloading files
@@ -177,6 +177,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
+      case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_STREAM: {
         int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
@@ -185,31 +186,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           cout << "Song selected" << song_name << endl;
           CreateThread(NULL, 0, stream_song_proc, (LPVOID)song_name, 0, NULL);
         }
-
         break;
-	  }
-	  case ID_VOICECHAT_CHATWITHSERVER:
-		  get_and_display_services(sock);
-		  break;
-	  case ID_SONGS_UPLOADSONGTOLIST:
-		  uploadFile(1338);
-		  break;
-	  case ID_SONGS_DOWNLOADSELECTEDSONG: {
-		  int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
-		  if (lbItem != LB_ERR) {
-			  char* song_name = new char[BUFSIZE];
-			  SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
-			  downloadFile(1337, song_name);
-		  }
-		  break;
-	  }
+	     }
+      case IDC_BTN_CHAT:
+      case ID_VOICECHAT_CHATWITHSERVER:
+        get_and_display_services(sock);
+        break;
+      case IDC_BTN_UPLOAD:
+      case ID_SONGS_UPLOADSONGTOLIST:
+        uploadFile(1338);
+        break;
+      case IDC_BTN_DOWNLOAD:
+      case ID_SONGS_DOWNLOADSELECTEDSONG: {
+        int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
+        if (lbItem != LB_ERR) {
+      	  char* song_name = new char[BUFSIZE];
+      	  SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
+      	  downloadFile(1337, song_name);
+        }
+        break;
+        }
       case IDM_EXIT:
         DestroyWindow(hWnd);
         break;
       default:
         return DefWindowProc(hWnd, message, wParam, lParam);
-    } 
-    break;
+      }
+  break;
   case WM_PAINT  :
     hdc = BeginPaint(hWnd, &ps);
     GetClientRect(hWnd, &rect);

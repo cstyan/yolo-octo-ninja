@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to 
-char * server = "142.232.138.86";
+char * server = "localhost";
 
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
@@ -143,7 +143,6 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
-
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0) )

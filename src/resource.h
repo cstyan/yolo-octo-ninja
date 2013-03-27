@@ -19,6 +19,7 @@
 #define	IDC_BTN_NEXT					203
 #define	IDC_BTN_DOWNLOAD				204
 #define	IDC_BTN_UPLOAD					205
+#define	IDC_BTN_CHAT					206
 
 #define IDC_LIBZPLAY_VERSION            1000
 #define BUFSIZE                         1024

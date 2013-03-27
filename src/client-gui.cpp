@@ -179,7 +179,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
       case ID_SONGS_PLAYSELECTEDSONG:
-      case IDC_BTN_STREAM: {
+	  case IDC_BTN_STREAM: {
         int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
           char* song_name = new char[BUFSIZE];
@@ -214,6 +214,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       		char* channel = new char[BUFSIZE];
       		SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);      		
 			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+		}
 		break;
 		}
       case IDM_EXIT:

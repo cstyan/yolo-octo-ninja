@@ -14,6 +14,12 @@ char * server = "localhost";
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
+struct ChannelInfo {
+   string name;
+   SOCKET sock;   
+   sockaddr_in addr;
+};
+
 int comm_connect (const char * host, int port) {
 	hostent	*hp;
 	sockaddr_in server;
@@ -125,6 +131,94 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	return 0;
 }
 
+ChannelInfo extractChannelInfo(const string& channel) {
+   ChannelInfo ci;
+
+   ci.name = "The Peak"; // TODO: un-hardcode
+   ci.addr.sin_family = AF_INET;
+   ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
+   ci.addr.sin_port = htons(8910);
+      
+   return ci;
+}
+
+void join_channel() {
+   int error;
+   bool reuseFlag = false;
+   SOCKADDR_IN localAddr, sourceAddr;
+   struct ip_mreq stMreq;
+
+   // Parse channel info
+   //ChannelInfo ci = extractChannelInfo(*channel);         
+   ChannelInfo ci = extractChannelInfo(string("fsdfsdF"));         
+
+   if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
+      // TODO: error handling
+   }
+
+   if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   localAddr.sin_family = AF_INET;
+   localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+   localAddr.sin_port = htons(8910);
+
+   if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   // Join multicast group
+   memset((char *)&stMreq, 0, sizeof(ip_mreq));
+   stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+   stMreq.imr_interface.s_addr = INADDR_ANY;   
+
+   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   // Create zplay instance for playing remote mic
+	ZPlay * netplay = CreateZPlay();
+	netplay->SetSettings(sidSamplerate, 44100);// 44100 samples
+	netplay->SetSettings(sidChannelNumber, 2);// 2 channel
+	netplay->SetSettings(sidBitPerSample, 16);// 16 bit
+	netplay->SetSettings(sidBigEndian, 0); // little endian
+	
+   int i;
+	
+   // Remote microphone is a UDP "stream" of PCM data,
+	int result = netplay->OpenStream(1, 1, &i, 2, sfPCM); // we open the zplay stream without any real data, and start playback when we actually get input.
+	if(result == 0) {
+		cerr << "Error: " <<  netplay->GetError() << endl;
+		netplay->Release();
+		return;
+	}
+
+	netplay->Play();
+      
+   while (true) {
+      // Create a buffer with maximum udp packet size, and recvfrom into it.
+		char * buf = new char[65507];
+
+      int addr_size = sizeof(struct sockaddr_in);
+      int r = recvfrom(ci.sock, buf, 65507, 0, (struct sockaddr*)&sourceAddr, &addr_size);
+      		
+		if ( r == -1 ) {
+			int err = WSAGetLastError();
+			if (err == 10054)
+				printf("Concoction recent by Pier.\n"); // Connection reset by peer.
+			else printf("get last error %d\n", err);
+			break;
+		}
+		
+		printf("%lu got %d \n", GetTickCount(), r);
+		netplay->PushDataToStream(buf, r);
+		delete buf;
+		if (r == 0)
+			break;
+	}   
+}
+
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;
 	HWND hwnd;
@@ -143,7 +237,7 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_DCWIN1));
-
+      
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0) )
 	{

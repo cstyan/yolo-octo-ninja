@@ -5,6 +5,7 @@
 #include "libzplay.h"
 #include <fstream>
 #include <sstream>
+#include <string>
 
 using namespace std;
 using namespace libZPlay;
@@ -15,6 +16,12 @@ struct ClientContext {
 	SOCKET control;
 	SOCKET udp;
 	sockaddr_in addr;
+};
+
+struct ChannelInfo {
+   string name;
+   SOCKET sock;   
+   sockaddr_in addr;
 };
 
 // Forward declarations. Only a couple of these are really needed, but all are listed for completeness
@@ -292,8 +299,7 @@ bool validate_param(string param, SOCKET error_sock, string error_msg) {
 --
 -- RETURNS: 
 --
--- NOTES:      Currently using control channel to transmit in order to match current client.
---             Should be changed later to create separate socket.
+-- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
 void process_download_file (ClientContext * ctx, string song) {
 	// Validate
@@ -313,7 +319,6 @@ void process_download_file (ClientContext * ctx, string song) {
 	// Send file
 	transmit_from_stream(ctx->control, f, BUFSIZE);
 
-	// TODO: close socket that was created
 	closesocket(ctx->control);
 }
 
@@ -323,10 +328,31 @@ void procress_upload_song(ClientContext * ctx, string song) {
 		return;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   procress_join_channel
+--
+-- DATE:       Mar 26, 2013
+--
+-- DESIGNER:   Dennis Ho
+--
+-- PROGRAMMER: Dennis Ho
+--
+-- INTERFACE:  void procress_join_channel(ClientContext * ctx, string channel)
+--
+-- RETURNS: 
+--
+-- NOTES:      
+----------------------------------------------------------------------------------------------------------------------*/
 void procress_join_channel(ClientContext * ctx, string channel) {
 	// Validate
 	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
 		return;
+   
+   for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
+      if (it->compare(channel) == 0)
+      {
+
+      }
 }
 
 void procress_join_voice(ClientContext * ctx) {   
@@ -382,6 +408,105 @@ void find_songs (std::vector<string>& songs) {
 	}
 }
 
+ChannelInfo extractChannelInfo(const string& channel) {
+   ChannelInfo ci;
+
+   ci.name = "The Peak"; // TODO: un-hardcode
+   ci.addr.sin_family = AF_INET;
+   ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
+   ci.addr.sin_port = htons(8910);
+      
+   return ci;
+}
+
+int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
+	ChannelInfo *ci = (ChannelInfo*)user_data;
+
+   if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
+		return 2;   
+	
+	Sleep(40);
+
+	return 1;
+}
+
+DWORD WINAPI start_channel(LPVOID lpParameter) {   
+   int error;
+   u_long ttl = 2;
+   bool loopback = false;
+   SOCKADDR_IN localAddr;
+
+   string *channel = (string*)lpParameter;
+
+   // Parse channel info
+   ChannelInfo ci = extractChannelInfo(*channel);   	
+   
+   // Create socket
+   ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+   if (ci.sock == INVALID_SOCKET) {
+      // TODO: error handling
+   }
+
+   // Bind socket   
+   localAddr.sin_family = AF_INET;
+   localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+   localAddr.sin_port = 0;
+
+   if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   // Join multicast group
+   struct ip_mreq stMreq;
+   memset((char *)&stMreq, 0, sizeof(ip_mreq));
+   stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+   stMreq.imr_interface.s_addr = INADDR_ANY;   
+
+   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   // Set TTL
+   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }
+
+   // Disable loopback
+   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopback, sizeof(loopback))) == SOCKET_ERROR) {
+      // TODO: error handling
+   }    
+
+   // Start streaming
+   // Create zplay Instance
+	ZPlay *out = CreateZPlay();
+
+   for (vector<string>::const_iterator it = s.songs.begin(); it != s.songs.end(); ++it) {
+      cout << "Streaming song to channel: " << *it << endl;
+
+	   // Open song
+	   if (out->OpenFile(it->c_str(), out->GetFileFormat(it->c_str())) == 0) {
+		   printf("Error: %s\n", out->GetError());
+		   out->Release();
+		   return 1;
+	   }
+      	   
+	   // decode song, send to multicast address
+	   out->SetCallbackFunc(multicast_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)&ci);
+	   out->Play();      	   	         
+   }        
+   
+   Sleep(10000000);
+
+   return 0;
+}
+
+void start_all_channels() {
+   for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
+      if (CreateThread(NULL, 0, start_channel, (LPVOID)&(*it), 0, NULL) == NULL)
+		   cerr << "Couldn't create channel thread!" << endl;   
+}
+
 int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session
@@ -403,6 +528,7 @@ int main(int argc, char const *argv[])
 	find_songs(s.songs);
 	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
 	s.channels.push_back("The Peak");
+   start_all_channels();
 
 	int sock = setup_listening();
 	wait_for_connections (sock);

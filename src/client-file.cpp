@@ -13,6 +13,7 @@ typedef struct temp
 } tempor;
 DWORD WINAPI DownloadThread(LPVOID lpParameter);
 tempor t;
+uData upload;
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -71,7 +72,6 @@ bool downloadFile(int s, std::string filename)
 void uploadFile(int s)
 {
 	HANDLE FileThread;
-	uData upload;
 
 	memset(&upload, 0, sizeof(upload));
 	
@@ -160,7 +160,6 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter)
 ----------------------------------------------------------------------------------------------------------------------*/
 bool Download(uData* Download, std::string filename)
 {
-	//HANDLE hFile;
 	int port, err;
 	SOCKET sd;
 	struct hostent	*hp;
@@ -265,7 +264,6 @@ bool Download(uData* Download, std::string filename)
 			break;
 
 		WSAGetOverlappedResult(SI->Socket, &SI->Overlapped, &error1, FALSE, &flag);
-		//WriteFile(hFile, SI->DataBuf.buf, error1, &BytesWritten, NULL);
 		fwrite(SI->DataBuf.buf, 1, error1, hFile);
 		WSAResetEvent(SI->Overlapped.hEvent);
 	}
@@ -380,7 +378,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	// Copy the server address
 	memcpy((char *)&server.sin_addr, hp->h_addr, hp->h_length);
 
-	// Connecting to the server
+	// Connecting to the client
 	if (connect (sd, (struct sockaddr *)&server, sizeof(server)) == -1)
 	{
 		err = WSAGetLastError();
@@ -404,21 +402,20 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
     SI->BytesSEND = 0;
     SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFSIZE;
-	sprintf(SI->Buffer, "U %s\r\n", upload->file);
-	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);
 
-	SI->Socket = sd;
-    ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));  
-    SI->BytesSEND = 0;
-    SI->BytesRECV = 0;
-    SI->DataBuf.len = BUFSIZE;
-
-	while (fread(SI->Buffer, 1, BUFSIZE, fp) > 0)
+	SI->DataBuf.buf = sbuf;
+	int ret = sprintf(sbuf, "U %s\r\n", upload->file);
+	SI->DataBuf.len = sizeof(sbuf);
+	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+	memset(sbuf, 0, sizeof(sbuf));
+	ret = 0;
+	while (fread(sbuf, 1, BUFSIZE, fp) > 0)
 	{
-		SI->DataBuf.buf = SI->Buffer;
-		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, &(SI->Overlapped), NULL);
-		memset(SI->Buffer, 0, sizeof(SI->Buffer));
+		ret = strlen(sbuf);
+		SI->DataBuf.len = ret;
+
+		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+		memset(sbuf, 0, sizeof(sbuf));
 	}
 
 	fclose(fp);

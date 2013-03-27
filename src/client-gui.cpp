@@ -29,6 +29,22 @@ int sock;
 HWND g_Hwnd, slb, clb;
 extern HINSTANCE hInst;	 // current instance from main.cpp
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   create_gui
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void create_gui (HWND hWnd)
+--    hwnd - the handle to the client parent window.
+--
+-- RETURNS:    nothing
+--
+-- NOTES: Populate the parent hwnd with the GUI for the client (listboxes, buttons, etc).
+----------------------------------------------------------------------------------------------------------------------*/
 void create_gui (HWND hWnd) {
   HFONT hFont;
   //HWND heInput;
@@ -112,15 +128,28 @@ void create_gui (HWND hWnd) {
       WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
       470, 260, 60, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  
-
   
   // Connect
   sock = comm_connect(server);
   get_and_display_services(sock);
 }
 
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   get_and_display_services
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void get_and_display_services(int control)
+--
+-- RETURNS:    nothing
+--
+-- NOTES: Request services from server, recieve its reply and populate the listboxes in the GUI with the data.
+----------------------------------------------------------------------------------------------------------------------*/
 void get_and_display_services(int control) {
 	// Clear List boxes.
 	SendMessage(slb, LB_RESETCONTENT, 0, 0);
@@ -164,11 +193,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
   static COLORREF crBkgnd; // color of main window background 
 
   switch (message) {
+
   case WM_CREATE :
 	  crBkgnd = RGB(102, 178, 255);				// set background colour for main window
     hbrBkgnd = CreateSolidBrush(crBkgnd);		// create background brush with background colour
     create_gui ( hWnd );
     break;
+
   case WM_COMMAND:
     wmId    = LOWORD(wParam);
     wmEvent = HIWORD(wParam);
@@ -178,8 +209,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
+
       case ID_SONGS_PLAYSELECTEDSONG:
-	  case IDC_BTN_STREAM: {
+      case IDC_BTN_PLAY: {
+        // if currently streaming a song
+        //     stop player (discard current stream data)
+        //     send new stream song request
+        //     start player
+        // Play thread needs control channel socket and pointer to zplayer instance.
         int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
           char* song_name = new char[BUFSIZE];
@@ -189,14 +226,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 	     }
+
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
         get_and_display_services(sock);
         break;
+
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
         uploadFile(1337);
         break;
+
       case IDC_BTN_DOWNLOAD:
       case ID_SONGS_DOWNLOADSELECTEDSONG: {
         int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
@@ -224,15 +264,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hWnd, message, wParam, lParam);
       }
   break;
+
   case WM_PAINT  :
     hdc = BeginPaint(hWnd, &ps);
     GetClientRect(hWnd, &rect);
     FillRect(hdc, &rect, hbrBkgnd);
     EndPaint(hWnd, &ps);
     return 0;
+
   case WM_DESTROY:
     PostQuitMessage(0);
     break;
+
   default:
     return DefWindowProc(hWnd, message, wParam, lParam);
   }

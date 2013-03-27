@@ -13,6 +13,7 @@ typedef struct temp
 } tempor;
 DWORD WINAPI DownloadThread(LPVOID lpParameter);
 tempor t;
+uData upload;
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
@@ -71,7 +72,6 @@ bool downloadFile(int s, std::string filename)
 void uploadFile(int s)
 {
 	HANDLE FileThread;
-	uData upload;
 
 	memset(&upload, 0, sizeof(upload));
 	
@@ -404,14 +404,15 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     SI->BytesRECV = 0;
 
 	SI->DataBuf.buf = sbuf;
-	int ret = sprintf(SI->Buffer, "U %s\r\n", upload->file);
-	SI->DataBuf.len = ret;
+	int ret = sprintf(sbuf, "U %s\r\n", upload->file);
+	SI->DataBuf.len = sizeof(sbuf);
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
-
+	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
 	while (fread(sbuf, 1, BUFSIZE, fp) > 0)
 	{
-		SI->DataBuf.len = sizeof(sbuf);
+		ret = strlen(sbuf);
+		SI->DataBuf.len = ret;
 
 		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 		memset(sbuf, 0, sizeof(sbuf));

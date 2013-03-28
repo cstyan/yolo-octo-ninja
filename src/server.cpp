@@ -498,7 +498,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
    // Create zplay Instance
 	ZPlay *out = CreateZPlay();
 
-	for (int i = 0; i < s.songs.size();)
+	for (size_t i = 0; i < s.songs.size();)
 	{
 		cout << "Streaming song to channel: " << s.songs[i] << endl;
 

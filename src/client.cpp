@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to 
-char * server = "localhost";
+const char * server = "localhost";
 
 int song_sock;
 ZPlay * netplay;
@@ -110,6 +110,8 @@ void stream_song () {
 		//printf("%lu got %d \n", GetTickCount(), r);
 		if (r == 0)
 			continue;
+
+		// Might need to protect this with mutex if client GUI modifies netplay as well.
 		netplay->PushDataToStream(buf, r);
 
 	}
@@ -118,7 +120,6 @@ void stream_song () {
 }
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
-	char * song_name = (char *) lpParamter;
 	stream_song();
 	return 0;
 }

@@ -38,7 +38,6 @@ using namespace std;
 ----------------------------------------------------------------------------------------------------------------------*/
 bool downloadFile(int s, std::string filename)
 {
-	HANDLE FileThread;
 	uData DataDownload;
 
 	memset(&DataDownload, 0, sizeof(DataDownload));
@@ -51,7 +50,7 @@ bool downloadFile(int s, std::string filename)
 	if (SaveFile(&DataDownload))
 	{
 		t.tempData = DataDownload;
-		FileThread = CreateThread(NULL, 0, DownloadThread, (LPVOID)&t, 0, NULL);
+		CreateThread(NULL, 0, DownloadThread, (LPVOID)&t, 0, NULL);
 	}
 	return false;		
 }
@@ -75,14 +74,12 @@ bool downloadFile(int s, std::string filename)
 ----------------------------------------------------------------------------------------------------------------------*/
 void uploadFile(int s)
 {
-	HANDLE FileThread;
-
 	memset(&upload, 0, sizeof(upload));
 	
 	upload.port = s;
 	
 	if (SelectFile(&upload))
-		FileThread = CreateThread(NULL, 0, UploadThread, (LPVOID)&upload, 0, NULL);
+		CreateThread(NULL, 0, UploadThread, (LPVOID)&upload, 0, NULL);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -173,7 +170,6 @@ bool Download(uData* Download, std::string filename)
 	WORD wVersionRequested;
 	FILE * hFile;
 	LPSOCKET_INFORMATION SI;
-	DWORD BytesWritten;
 	
 	port = Download->port;
 
@@ -244,14 +240,13 @@ bool Download(uData* Download, std::string filename)
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 
 	DWORD flag = 0;
-	DWORD error1 = 1, error2 = 0, error3 = 0;
+	DWORD error1 = 1, error2 = 0;
 
 	printf("Opening: %s\n", Download->file);
 	hFile = fopen(Download->file, "wb");
 	if (hFile == NULL) {
 		printf("Could not fopen\n");
 	}
-	int count = 0;
 	memset(sbuf, 0, sizeof(sbuf));
 
 	ret = 0;
@@ -260,7 +255,7 @@ bool Download(uData* Download, std::string filename)
 		SI->DataBuf.len = BUFSIZE;
 		error1 = WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, &flag, &(SI->Overlapped), NULL);
 
-		if (error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
+		if ((int)error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
 			break;
 
 		ret = WSAWaitForMultipleEvents(1, &SI->Overlapped.hEvent, TRUE, 500, TRUE);

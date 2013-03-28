@@ -404,14 +404,13 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     SI->BytesRECV = 0;
 
 	SI->DataBuf.buf = sbuf;
-	int ret = sprintf(sbuf, "U %s\r\n", upload->file);
+	int ret = sprintf(sbuf, "U %s\n", upload->file);
 	SI->DataBuf.len = sizeof(sbuf);
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
-	while (fread(sbuf, 1, BUFSIZE, fp) > 0)
+	while ((ret = fread(sbuf, 1, BUFSIZE, fp)) > 0)
 	{
-		ret = strlen(sbuf);
 		SI->DataBuf.len = ret;
 
 		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);

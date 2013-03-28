@@ -84,7 +84,7 @@ void create_gui (HWND hWnd) {
   SendMessage (							// Mic button for using microphone
     CreateWindow("BUTTON", "Chat",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      590, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
+      580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (							// Download button for downloading files
@@ -102,25 +102,25 @@ void create_gui (HWND hWnd) {
   SendMessage (
 	slb = CreateWindow("LISTBOX", "SongList",	// Songs can be listed and selected here
 		WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-		50, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+		50, 40, 480, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
 	clb = CreateWindow("LISTBOX", "ChannelList",	// Channels can be listed and selected here
 		WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-		355, 40, 295, 210, hWnd, (HMENU)-1, NULL, NULL)
+		540, 40, 100, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("STATIC", "Song List",
       WS_CHILD|WS_VISIBLE|SS_CENTER, 
-      50, 25, 295, 15, hWnd, (HMENU)-1, NULL, NULL)
+      50, 25, 480, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("STATIC", "Channel List",
       WS_CHILD|WS_VISIBLE|SS_CENTER, 
-      355, 25, 295, 15, hWnd, (HMENU)-1, NULL, NULL)
+      540, 25, 100, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (

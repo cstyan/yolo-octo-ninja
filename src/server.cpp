@@ -225,10 +225,10 @@ void process_stream_song (ClientContext * ctx, string song) {
 	// when song is finished, return. TODO: use event instead of poll.
 	while (true) {
 		TStreamStatus status;
-        out->GetStatus(&status); 
-        if(status.fPlay == 0)
-            break; // exit checking loop
-        Sleep(100);
+		out->GetStatus(&status); 
+		if(status.fPlay == 0)
+			break; // exit checking loop
+		Sleep(100);
 	}
 
 	return;
@@ -365,10 +365,10 @@ void process_join_channel(ClientContext * ctx, string channel) {
 		return;
    
    for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-      if (it->compare(channel) == 0)
-      {
+	  if (it->compare(channel) == 0)
+	  {
 
-      }
+	  }
 }
 
 void process_join_voice(ClientContext * ctx) {   
@@ -418,7 +418,7 @@ void find_songs (std::vector<string>& songs) {
 	};
 
 	// Look for any of the above file types and add them to the songs list.
-	for (int i = 0; i < sizeof(songtypes); ++i)
+	for (size_t i = 0; i < sizeof(songtypes); ++i)
 	{
 		add_files_to_songs(songs, songtypes[i]);
 	}
@@ -431,17 +431,18 @@ ChannelInfo extractChannelInfo(const string& channel) {
    ci.addr.sin_family = AF_INET;
    ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
    ci.addr.sin_port = htons(8910);
-      
+	  
    return ci;
 }
 
 int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ChannelInfo *ci = (ChannelInfo*)user_data;
 
-   if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
-		return 2;   
+	if (message == MsgWaveBuffer)
+		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
+			return 2;   
 	
-	Sleep(20);
+	Sleep(40);
 
 	return 1;
 }
@@ -461,7 +462,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
    ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
 
    if (ci.sock == INVALID_SOCKET) {
-      // TODO: error handling
+	  // TODO: error handling
    }
 
    // Bind socket   
@@ -470,7 +471,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
    localAddr.sin_port = 0;
 
    if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
-      // TODO: error handling
+	  // TODO: error handling
    }
 
    // Join multicast group
@@ -480,46 +481,58 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
    stMreq.imr_interface.s_addr = INADDR_ANY;   
 
    if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
-      // TODO: error handling
+	  // TODO: error handling
    }
 
    // Set TTL
    if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl))) == SOCKET_ERROR) {
-      // TODO: error handling
+	  // TODO: error handling
    }
 
    // Disable loopback
    if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopback, sizeof(loopback))) == SOCKET_ERROR) {
-      // TODO: error handling
+	  // TODO: error handling
    }    
 
    // Start streaming
    // Create zplay Instance
 	ZPlay *out = CreateZPlay();
 
-   for (vector<string>::const_iterator it = s.songs.begin(); it != s.songs.end(); ++it) {
-      cout << "Streaming song to channel: " << *it << endl;
+	for (int i = 0; i < s.songs.size();)
+	{
+		cout << "Streaming song to channel: " << s.songs[i] << endl;
 
-	   // Open song
-	   if (out->OpenFile(it->c_str(), out->GetFileFormat(it->c_str())) == 0) {
-		   printf("Error: %s\n", out->GetError());
-		   out->Release();
-		   return 1;
-	   }
-      	   
-	   // decode song, send to multicast address
-	   out->SetCallbackFunc(multicast_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)&ci);
-	   out->Play();      	   	         
-   	   Sleep(10000000);
-   }        
-   
+		// Open song
+		if (out->OpenFile(s.songs[i].c_str(), out->GetFileFormat(s.songs[i].c_str())) == 0) {
+			printf("Error: %s\n", out->GetError());
+			out->Release();
+			return 1;
+		}
 
-   return 0;
+		// decode song, send to multicast address
+		out->SetCallbackFunc(multicast_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)&ci);
+		out->Play();
+
+		TStreamStatus status;
+		while (status.fPlay == 0) {
+			out->GetStatus(&status);
+			Sleep(192);
+		}
+
+		while (status.fPlay != 0) {
+			out->GetStatus(&status);
+			Sleep(192);
+		}
+
+		if ((++i) == s.songs.size())
+			i = 0;
+	}
+	return 0;
 }
 
 void start_all_channels() {
-	//for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-		if (CreateThread(NULL, 0, start_channel, (LPVOID)&s.channels[0], 0, NULL) == NULL)
+	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
+		if (CreateThread(NULL, 0, start_channel, (LPVOID)&(*it), 0, NULL) == NULL)
 			cerr << "Couldn't create channel thread!" << endl;
 }
 

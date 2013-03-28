@@ -16,6 +16,9 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter);
 tempor t;
 uData upload;
 
+#define MSG_WAITALL 0x8
+using namespace std;
+
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: DownloadFile
 --
@@ -408,8 +411,16 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 
 	SI->DataBuf.buf = sbuf;
 	int ret = sprintf(sbuf, "U %s\n", filename);
-	SI->DataBuf.len = sizeof(sbuf);
+	SI->DataBuf.len = ret;
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+	
+	char reply_buffer[9] = {0};
+	std::string go_reply("go-ahead");
+	recv(SI->Socket, reply_buffer, 8, MSG_WAITALL);
+	
+	if (reply_buffer != go_reply)
+		cout << "Didn't get the go-ahead!" << endl;
+
 	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
 	while ((ret = fread(sbuf, 1, BUFSIZE, fp)) > 0)

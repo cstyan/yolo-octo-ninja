@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to 
-char * server = "192.168.0.12";
+char * server = "localhost";
 
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
@@ -196,7 +196,9 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	netplay->Play();
       
-   while (true) {
+	size_t buffed = 0;
+
+	while (true) {
       // Create a buffer with maximum udp packet size, and recvfrom into it.
 		char * buf = new char[65507];
 
@@ -210,9 +212,14 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 			else printf("get last error %d\n", err);
 			break;
 		}
-		
 		printf("%lu got %d \n", GetTickCount(), r);
 		netplay->PushDataToStream(buf, r);
+		buffed += r;
+		
+		//if (buffed > 800000)
+		//	netplay->Play();
+
+
 		delete buf;
 		if (r == 0)
 			break;

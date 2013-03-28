@@ -31,9 +31,9 @@ string recv_request(SOCKET);
 DWORD WINAPI handle_client(LPVOID);
 void process_stream_song(ClientContext*, string);
 void process_download_file(ClientContext * ctx, string song);
-void procress_upload_song(ClientContext * ctx, string song);
-void procress_join_channel(ClientContext * ctx, string channel);
-void procress_join_voice(ClientContext * ctx);
+void process_upload_song(ClientContext * ctx, string song);
+void process_join_channel(ClientContext * ctx, string channel);
+void process_join_voice(ClientContext * ctx);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
 void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
 bool validate_param(string param, SOCKET error_sock, string error_msg);
@@ -142,7 +142,7 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 		stringstream req_stream(request);
 		if (req_stream >> req_command >> ws) {
 			if (req_command == "V") { // Parameterless
-				procress_join_voice(ctx);
+				process_join_voice(ctx);
 			}
 			else { // Parameterized
 				string param;
@@ -154,9 +154,9 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 				else if (req_command == "S")
 					process_stream_song(ctx, param);
 				else if (req_command == "U")
-					procress_upload_song(ctx, param);            
+					process_upload_song(ctx, param);            
 				else if (req_command == "C")
-					procress_join_channel(ctx, param);
+					process_join_channel(ctx, param);
 			}
 		}
 	}
@@ -322,14 +322,30 @@ void process_download_file (ClientContext * ctx, string song) {
 	closesocket(ctx->control);
 }
 
-void procress_upload_song(ClientContext * ctx, string song) {
+void process_upload_song(ClientContext * ctx, string song) {
+	cout << "Uploading " << song << endl;
 	// Validate
 	if (!validate_param(song, ctx->control, "Invalid upload file request: no file name specified!"))
 		return;
+
+	// Give the client the go-ahead- literally.
+	send(ctx->control, "go-ahead", 8, 0);
+
+	int read = 0;
+	char buffer[BUFSIZE];
+	ofstream out(song.c_str(), ofstream::binary);
+
+	if (!out)
+		closesocket(ctx->control);
+
+	while ((read = recv(ctx->control, buffer, BUFSIZE, 0)) > 0)
+		out.write(buffer, read);
+
+	closesocket(ctx->control);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   procress_join_channel
+-- FUNCTION:   process_join_channel
 --
 -- DATE:       Mar 26, 2013
 --
@@ -337,13 +353,13 @@ void procress_upload_song(ClientContext * ctx, string song) {
 --
 -- PROGRAMMER: Dennis Ho
 --
--- INTERFACE:  void procress_join_channel(ClientContext * ctx, string channel)
+-- INTERFACE:  void process_join_channel(ClientContext * ctx, string channel)
 --
 -- RETURNS: 
 --
 -- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
-void procress_join_channel(ClientContext * ctx, string channel) {
+void process_join_channel(ClientContext * ctx, string channel) {
 	// Validate
 	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
 		return;
@@ -355,7 +371,7 @@ void procress_join_channel(ClientContext * ctx, string channel) {
       }
 }
 
-void procress_join_voice(ClientContext * ctx) {   
+void process_join_voice(ClientContext * ctx) {   
 }
 
 /*
@@ -425,7 +441,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
    if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
 		return 2;   
 	
-	Sleep(40);
+	Sleep(20);
 
 	return 1;
 }
@@ -494,24 +510,24 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	   // decode song, send to multicast address
 	   out->SetCallbackFunc(multicast_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)&ci);
 	   out->Play();      	   	         
+   	   Sleep(10000000);
    }        
    
-   Sleep(10000000);
 
    return 0;
 }
 
 void start_all_channels() {
-   for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-      if (CreateThread(NULL, 0, start_channel, (LPVOID)&(*it), 0, NULL) == NULL)
-		   cerr << "Couldn't create channel thread!" << endl;   
+	//for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
+		if (CreateThread(NULL, 0, start_channel, (LPVOID)&s.channels[0], 0, NULL) == NULL)
+			cerr << "Couldn't create channel thread!" << endl;
 }
 
 int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session
 	WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(2,2);
+	WORD wVersionRequested = MAKEWORD(2,2);
 	WSAStartup(wVersionRequested, &wsaData);
 	
 	// Initialize some services.
@@ -528,7 +544,7 @@ int main(int argc, char const *argv[])
 	find_songs(s.songs);
 	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
 	s.channels.push_back("The Peak");
-   start_all_channels();
+	start_all_channels();
 
 	int sock = setup_listening();
 	wait_for_connections (sock);

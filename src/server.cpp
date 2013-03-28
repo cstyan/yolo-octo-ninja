@@ -514,6 +514,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 		out->Play();
 
 		TStreamStatus status;
+		out->GetStatus(&status);
 		while (status.fPlay == 0) {
 			out->GetStatus(&status);
 			Sleep(192);

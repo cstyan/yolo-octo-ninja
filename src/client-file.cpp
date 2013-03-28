@@ -5,6 +5,7 @@
 */
 #include "commaudio.h"
 #include "client-file.h"
+char filename[1024];
 
 typedef struct temp 
 {
@@ -300,6 +301,8 @@ bool SelectFile(uData* upload)
     ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
     ofn.hwndOwner = NULL;
     ofn.lpstrFile = upload->file;
+	ofn.lpstrFileTitle = filename;
+	ofn.nMaxFileTitle = MAX_PATH;
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
@@ -404,7 +407,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
     SI->BytesRECV = 0;
 
 	SI->DataBuf.buf = sbuf;
-	int ret = sprintf(sbuf, "U %s\n", upload->file);
+	int ret = sprintf(sbuf, "U %s\n", filename);
 	SI->DataBuf.len = sizeof(sbuf);
 	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 	memset(sbuf, 0, sizeof(sbuf));

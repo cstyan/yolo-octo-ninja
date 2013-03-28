@@ -11,6 +11,8 @@ using namespace libZPlay;
 // The Server to connect to 
 char * server = "localhost";
 
+int song_sock;
+ZPlay * netplay;
 HINSTANCE hInst;
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
@@ -72,25 +74,15 @@ string recv_services (int sd) {
 	return out;
 }
 
-void stream_song (string song) {
-	int sock = comm_connect(server);
-	int song_sock = create_udp_socket(1338);
-	
-	// Build request line
-	string request = "S " + song + "\n";
-	
-	send(sock, request.data(), request.size(), 0);
+void stream_song () {
+	// Close stream
+	netplay->Close();
 
-	//
-	// Create zplay instance for playing remote mic
-	ZPlay * netplay = CreateZPlay();
-	netplay->SetSettings(sidSamplerate, 44100);// 44100 samples
-	netplay->SetSettings(sidChannelNumber, 2);// 2 channel
-	netplay->SetSettings(sidBitPerSample, 16);// 16 bit
-	netplay->SetSettings(sidBigEndian, 0); // little endian
+	// Open new stream
 	int i;
-	// Remote microphone is a UDP "stream" of PCM data,
-	int result = netplay->OpenStream(1, 1, &i, 2, sfPCM); // we open the zplay stream without any real data, and start playback when we actually get input.
+
+	// we open the zplay stream without any real data, and start playback when we actually get input.
+	int result = netplay->OpenStream(1, 1, &i, 2, sfPCM);
 	if(result == 0) {
 		cerr << "Error: " <<  netplay->GetError() << endl;
 		netplay->Release();
@@ -102,7 +94,7 @@ void stream_song (string song) {
 	// Mainloop: just recv() remote microphone data and push it to dynamic stream
 	while ( true ) {
 		// Create a buffer with maximum udp packet size, and recvfrom into it.
-		char * buf = new char[65507];
+		char buf[65507];
 		
 		sockaddr_in server;
 		int size = sizeof(server);
@@ -115,11 +107,11 @@ void stream_song (string song) {
 			break;
 		}
 		
-		printf("%lu got %d \n", GetTickCount(), r);
-		netplay->PushDataToStream(buf, r);
-		delete buf;
+		//printf("%lu got %d \n", GetTickCount(), r);
 		if (r == 0)
-			break;
+			continue;
+		netplay->PushDataToStream(buf, r);
+
 	}
 
 	closesocket(song_sock);
@@ -127,7 +119,7 @@ void stream_song (string song) {
 
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	char * song_name = (char *) lpParamter;
-	stream_song(song_name);
+	stream_song();
 	return 0;
 }
 
@@ -177,24 +169,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
       // TODO: error handling
    }
 
-   // Create zplay instance for playing remote mic
-	ZPlay * netplay = CreateZPlay();
-	netplay->SetSettings(sidSamplerate, 44100);// 44100 samples
-	netplay->SetSettings(sidChannelNumber, 2);// 2 channel
-	netplay->SetSettings(sidBitPerSample, 16);// 16 bit
-	netplay->SetSettings(sidBigEndian, 0); // little endian
-	
-   int i;
-	
-   // Remote microphone is a UDP "stream" of PCM data,
-	int result = netplay->OpenStream(1, 1, &i, 2, sfPCM); // we open the zplay stream without any real data, and start playback when we actually get input.
-	if(result == 0) {
-		cerr << "Error: " <<  netplay->GetError() << endl;
-		netplay->Release();
-		return 1;
-	}
-
-	netplay->Play();
+   netplay->Play();
       
 	size_t buffed = 0;
 
@@ -237,6 +212,20 @@ int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2,2);
 	WSAStartup(wVersionRequested, &wsaData);
+
+	// Create song stream listening UDP socket.
+	song_sock = create_udp_socket(1338);
+
+	// Create zplay instance for playing remote mic
+	netplay = CreateZPlay();
+	netplay->SetSettings(sidSamplerate, 44100);// 44100 samples
+	netplay->SetSettings(sidChannelNumber, 2);// 2 channel
+	netplay->SetSettings(sidBitPerSample, 16);// 16 bit
+	netplay->SetSettings(sidBigEndian, 0); // little endian
+
+	netplay->Play();
+
+	CreateThread(NULL, 0, stream_song_proc, (LPVOID)NULL, 0, NULL);
 
 	MyRegisterClass(hInstance);
 

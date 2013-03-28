@@ -221,8 +221,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (lbItem != LB_ERR) {
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
-          cout << "Song selected" << song_name << endl;
-          CreateThread(NULL, 0, stream_song_proc, (LPVOID)song_name, 0, NULL);
+          cout << "Song selected " << song_name << endl;
+          // Build and send request line
+          string request = "S " + string(song_name) + "\n";
+          send(sock, request.data(), request.size(), 0);
         }
         break;
 	     }
@@ -360,7 +362,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			ss << (double) (zp->GetVersion()/100.0);
 			zplay += ss.str();
 
-			SendMessage( GetDlgItem(hDlg, IDC_LIBZPLAY_VERSION), WM_SETTEXT, NULL, (LPARAM) zplay.c_str());
+			SendMessage( GetDlgItem(hDlg, IDC_LIBZPLAY_VERSION), WM_SETTEXT, 0, (LPARAM) zplay.c_str());
 		}
 		return (INT_PTR)TRUE;
 

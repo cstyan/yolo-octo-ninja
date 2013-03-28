@@ -194,7 +194,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
-        uploadFile(1338);
+        uploadFile(1337);
         break;
       case IDC_BTN_DOWNLOAD:
       case ID_SONGS_DOWNLOADSELECTEDSONG: {

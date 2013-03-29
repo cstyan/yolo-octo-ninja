@@ -16,6 +16,7 @@ struct ClientContext {
 	SOCKET control;
 	SOCKET udp;
 	sockaddr_in addr;
+	ZPlay * decoder;
 };
 
 struct ChannelInfo {
@@ -203,14 +204,14 @@ void process_stream_song (ClientContext * ctx, string song) {
 	if (!validate_param(song, ctx->control, "Invalid stream song request: no song specified!"))
 		return;
 
-	// Create zplay Instance
-	ZPlay * out = CreateZPlay();
+	// Create zplay decoder instance, if it didn't already exist.
+	if (ctx->decoder == NULL)
+		ctx->decoder = CreateZPlay();
 
 	// Open song
-	int result = out->OpenFile(song.c_str(), out->GetFileFormat(song.c_str()));
+	int result = ctx->decoder->OpenFile(song.c_str(), ctx->decoder->GetFileFormat(song.c_str()));
 	if(result == 0) {
-		printf("Error: %s\n", out->GetError());
-		out->Release();
+		printf("Error: %s\n", ctx->decoder->GetError());
 		return;
 	}
 
@@ -219,19 +220,41 @@ void process_stream_song (ClientContext * ctx, string song) {
 	ctx->addr.sin_port = htons(1338);
 
 	// decode song, send to client address
-	out->SetCallbackFunc(stream_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)ctx);
-	out->Play();
+	ctx->decoder->SetCallbackFunc(stream_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)ctx);
+	ctx->decoder->Play();
 
 	// when song is finished, return. TODO: use event instead of poll.
-	while (true) {
+	/*while (true) {
 		TStreamStatus status;
-		out->GetStatus(&status); 
+		ctx->decoder->GetStatus(&status); 
 		if(status.fPlay == 0)
 			break; // exit checking loop
 		Sleep(100);
-	}
+	}*/
 
 	return;
+}
+
+/*
+* stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2)
+*   void * instance - zplay instance
+*	void * user_data - should be a pointer to ClientContext
+*	message - Message type to handle
+*	param1 - Message parameters 1.
+*	param2 - Message parameters 2.
+* Notes: This callback is called when a chunk of the song has been decoded.
+* Return: 1 to continue decoding, 2 to stop.
+*/
+int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
+	ClientContext * ctx = (ClientContext *) user_data;
+	sockaddr_in * client_addr = &ctx->addr;
+
+	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
+		return 2;
+	
+	Sleep(10);
+
+	return 1;
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -374,29 +397,6 @@ void process_join_channel(ClientContext * ctx, string channel) {
 void process_join_voice(ClientContext * ctx) {   
 }
 
-/*
-* stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2)
-*   void * instance - zplay instance
-*	void * user_data - should be a pointer to ClientContext
-*	message - Message type to handle
-*	param1 - Message parameters 1.
-*	param2 - Message parameters 2.
-* Notes: This callback is called when a chunk of the song has been decoded.
-* Return: 1 to continue decoding, 2 to stop.
-*/
-int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
-	ClientContext * ctx = (ClientContext *) user_data;
-	sockaddr_in * client_addr = &ctx->addr;
-
-	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
-		return 2;
-	
-	Sleep(10);
-
-	return 1;
-}
-
-
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(file, &ffd);
@@ -440,14 +440,14 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 
 	if (message == MsgWaveBuffer)
 		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
-			return 2;   
+			return 2;
 	
-	Sleep(40);
-
+	Sleep(5);
 	return 1;
 }
 
-DWORD WINAPI start_channel(LPVOID lpParameter) {   
+DWORD WINAPI start_channel(LPVOID lpParameter) {
+	return 0;
    int error;
    u_long ttl = 2;
    bool loopback = false;

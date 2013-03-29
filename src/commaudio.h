@@ -1,8 +1,10 @@
+#define _WIN32_WINNT 0x0502
 #ifdef _MSC_VER
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #ifndef COMMAUDIO_H
-#define COMMAUDIO_Hs
+#define COMMAUDIO_H
+
 #include <sstream>
 #include <iostream>
 #include <vector>

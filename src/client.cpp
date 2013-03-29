@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to 
-const char * server = "localhost";
+const char * server = "cookie-monster";
 
 int song_sock;
 ZPlay * netplay;

@@ -13,6 +13,9 @@
 #include "libzplay.h"
 
 using namespace std;
+using namespace libZPlay;
+
+extern ZPlay * netplay;
 
 /* Easy styles enabler for msvc */
 #ifdef _MSC_VER
@@ -212,10 +215,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
+
         // if currently streaming a song
         //     stop player (discard current stream data)
         //     send new stream song request
         //     start player
+        // Close stream
+        netplay->Close();
+
+        // Open new stream
+        int i;
+
+        // we open the zplay stream without any real data, and start playback when we actually get input.
+        int result = netplay->OpenStream(1, 1, &i, 2, sfPCM);
+        if(result == 0) {
+          cerr << "Error: " <<  netplay->GetError() << endl;
+          netplay->Release();
+          break;
+        }
+
+        netplay->Play();
         // Play thread needs control channel socket and pointer to zplayer instance.
         int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {

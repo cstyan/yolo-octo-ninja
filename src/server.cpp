@@ -95,6 +95,7 @@ void wait_for_connections (int lsock) {
 		// Start client handler
 		cout << "New client: " << inet_ntoa(client.sin_addr) << endl;
 		ClientContext * ctx = new ClientContext;
+		memset(ctx, 0, sizeof(ClientContext));
 		ctx->control = new_sd;
 		ctx->addr    = client;
 		
@@ -447,7 +448,6 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 }
 
 DWORD WINAPI start_channel(LPVOID lpParameter) {
-	return 0;
    int error;
    u_long ttl = 2;
    bool loopback = false;

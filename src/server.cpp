@@ -6,11 +6,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+// #include <mutex> 
 
 using namespace std;
 using namespace libZPlay;
 
 Services s;
+//std::mutex services_mutex; // std::mutex is C++11, we'll  probably have to use win32 mutex.
 
 struct ClientContext {
 	SOCKET control;
@@ -39,6 +41,7 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
 bool validate_param(string param, SOCKET error_sock, string error_msg);
 void add_files_to_songs (std::vector<string>& songs, const char * file);
+void find_songs (std::vector<string>& songs);
 
 /*
 * setup_listening (int port = 1337)
@@ -126,17 +129,16 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 			closesocket(client);
 			break;
 		} else if (request == "list-services") {
-			// refresh-services
-			// Clear songs
-			//s.songs.clear();
-			// Find songs
-			//find_songs(s.songs)
-
 			// Generate services list.
 			string services = ListServices(s); 
 			// Send the list of services.
 			send(client, services.data(), services.size(), 0);
 			continue;
+		} else if (request == "stop-stream") {
+			if (ctx->decoder) {
+				cout << "Stopping stream" << endl;
+				ctx->decoder->Stop();
+			}
 		}
 
 		// Parse requests with commands (stream song request, download song request, etc)
@@ -366,6 +368,14 @@ void process_upload_song(ClientContext * ctx, string song) {
 		out.write(buffer, read);
 
 	closesocket(ctx->control);
+
+	// A new song may be available now: refresh-services.
+	//services_mutex.lock();
+	// Clear songs
+	s.songs.clear();
+	// Find songs
+	find_songs(s.songs);
+	//services_mutex.unlock();
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -497,7 +507,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
    // Start streaming
    // Create zplay Instance
 	ZPlay *out = CreateZPlay();
-
+	
+	//services_mutex.lock();
 	for (size_t i = 0; i < s.songs.size();)
 	{
 		cout << "Streaming song to channel: " << s.songs[i] << endl;
@@ -508,6 +519,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 			out->Release();
 			return 1;
 		}
+		// We're done with services for now, unlock while we play the song.
+		//services_mutex.unlock();
 
 		// decode song, send to multicast address
 		out->SetCallbackFunc(multicast_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), (void*)&ci);
@@ -525,9 +538,14 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 			Sleep(192);
 		}
 
+		// Lock to check the size, gets unlocked at the beginning of the loop.
+		//services_mutex.lock();
 		if ((++i) == s.songs.size())
 			i = 0;
 	}
+	
+	// When the channel playlist loop is done, unlock services.
+	//services_mutex.unlock();
 	return 0;
 }
 

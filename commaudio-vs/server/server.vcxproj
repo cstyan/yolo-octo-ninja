@@ -87,6 +87,9 @@
     <ClInclude Include="..\..\src\commaudio.h" />
     <ClInclude Include="..\..\src\resource.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\commaudio.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

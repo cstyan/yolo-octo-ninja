@@ -44,7 +44,12 @@ BEGIN
     END
     POPUP "Songs"
     BEGIN
-        MENUITEM "Play Selected Song",          ID_SONGS_PLAYSELECTEDSONG
+        MENUITEM "Play",                        ID_SONGS_PLAYSELECTEDSONG
+        MENUITEM "Pause",                       ID_SONGS_PAUSESELECTEDSONG
+        MENUITEM "Stop",                        ID_SONGS_STOPSELECTEDSONG
+        MENUITEM "Prev",                        ID_SONGS_PLAYPREV
+        MENUITEM "Next",                        ID_SONGS_PLAYNEXT
+        MENUITEM SEPARATOR
         MENUITEM "Download Selected Song",      ID_SONGS_DOWNLOADSELECTEDSONG
         MENUITEM "Upload Song to List",         ID_SONGS_UPLOADSONGTOLIST
     END
@@ -55,6 +60,10 @@ BEGIN
     POPUP "Voice Chat"
     BEGIN
         MENUITEM "Chat with Server",            ID_VOICECHAT_CHATWITHSERVER
+    END
+    POPUP "Setup"
+    BEGIN
+        MENUITEM "Select Server",               ID_SETUP_SELECTSERVER
     END
     POPUP "&Help"
     BEGIN
@@ -82,11 +91,11 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 196, 101
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About dc-win-1"
+CAPTION "About DJK Comm Audio Player"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            128,IDC_STATIC,14,14,21,20
-    LTEXT           "Comm Audio Version 1.0",IDC_STATIC,42,14,136,8,SS_NOPREFIX
+    ICON            128,IDC_STATIC,14,14,20,20
+    LTEXT           "DJK Comm Audio Player Version 1.0",IDC_STATIC,42,14,136,8,SS_NOPREFIX
     LTEXT           "Copyleft (C) 2013\nDavid Czech\nDennis Ho\nKevin Tangeman\nJake Miner",IDC_STATIC,42,34,114,47
     DEFPUSHBUTTON   "OK",IDOK,128,80,50,14,WS_GROUP
     LTEXT           "LIBZPLAY_VERSION",IDC_LIBZPLAY_VERSION,42,24,123,8
@@ -152,6 +161,52 @@ BEGIN
 END
 
 #endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Canada) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENC)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SERVERSETUPBOX DIALOGEX 0, 0, 224, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Server"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "OK",IDOK,94,45,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,153,45,50,14
+    EDITTEXT        IDC_ADDR_HOSTNAME,18,25,185,14,ES_AUTOHSCROLL
+    LTEXT           "Streaming Server Host",IDC_STATIC,21,15,182,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SERVERSETUPBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 217
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

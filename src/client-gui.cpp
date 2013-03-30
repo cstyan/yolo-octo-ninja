@@ -502,7 +502,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	HWND hCtl;
 	LPCSTR dlgtext;
 	static HWND addrBox;
 	TCHAR tmpBuffer[256];

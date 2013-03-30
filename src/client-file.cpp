@@ -5,6 +5,8 @@
 */
 #include "commaudio.h"
 #include "client-file.h"
+
+extern const char * server;
 char filename[1024];
 
 typedef struct temp 
@@ -164,7 +166,7 @@ bool Download(uData* Download, std::string filename)
 	int port, err;
 	SOCKET sd;
 	struct hostent	*hp;
-	struct sockaddr_in server;
+	struct sockaddr_in server_addr;
 	char sbuf[BUFSIZE];
 	WSADATA WSAData;
 	WORD wVersionRequested;
@@ -189,9 +191,9 @@ bool Download(uData* Download, std::string filename)
 	}
 
 	// Initialize and set up the address structure
-	memset((char *)&server, 0, sizeof(struct sockaddr_in));
-	server.sin_family = AF_INET;
-	server.sin_port = htons(port);
+	memset((char *)&server_addr, 0, sizeof(struct sockaddr_in));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port);
 
 	struct linger so_linger;
 	so_linger.l_onoff = TRUE;
@@ -201,17 +203,17 @@ bool Download(uData* Download, std::string filename)
 	// ------------------------------------------------------------------------------------------
 	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE CLIENT ADDRESS
 	// ------------------------------------------------------------------------------------------
-	if ((hp = gethostbyname("localhost")) == NULL)
+	if ((hp = gethostbyname(server)) == NULL)
 	{
 		err = WSAGetLastError();
 		return false;
 	}
 
 	// Copy the server address
-	memcpy((char *)&server.sin_addr, hp->h_addr, hp->h_length);
+	memcpy((char *)&server_addr.sin_addr, hp->h_addr, hp->h_length);
 
 	// Connecting to the server
-	if (connect (sd, (struct sockaddr *)&server, sizeof(server)) == -1)
+	if (connect (sd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
 	{
 		err = WSAGetLastError();
 		return false;
@@ -332,7 +334,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	int port, err;
 	SOCKET sd;
 	struct hostent	*hp;
-	struct sockaddr_in server;
+	struct sockaddr_in server_addr;
 	char sbuf[BUFSIZE];
 	WSADATA WSAData;
 	WORD wVersionRequested;
@@ -358,9 +360,9 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	}
 
 	// Initialize and set up the address structure
-	memset((char *)&server, 0, sizeof(struct sockaddr_in));
-	server.sin_family = AF_INET;
-	server.sin_port = htons(port);
+	memset((char *)&server_addr, 0, sizeof(struct sockaddr_in));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port);
 
 	struct linger so_linger;
 	so_linger.l_onoff = TRUE;
@@ -370,17 +372,17 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	// ------------------------------------------------------------------------------------------
 	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE SERVER ADDRESS
 	// ------------------------------------------------------------------------------------------
-	if ((hp = gethostbyname("localhost")) == NULL)
+	if ((hp = gethostbyname(server)) == NULL)
 	{
 		err = WSAGetLastError();
 		return FALSE;
 	}
 
 	// Copy the server address
-	memcpy((char *)&server.sin_addr, hp->h_addr, hp->h_length);
+	memcpy((char *)&server_addr.sin_addr, hp->h_addr, hp->h_length);
 
 	// Connecting to the client
-	if (connect (sd, (struct sockaddr *)&server, sizeof(server)) == -1)
+	if (connect (sd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
 	{
 		err = WSAGetLastError();
 		return FALSE;

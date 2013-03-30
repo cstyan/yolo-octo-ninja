@@ -11,10 +11,12 @@ using namespace libZPlay;
 // The Server to connect to 
 const char * server = "cookie-monster";
 
-int song_sock;
-ZPlay * netplay;
 HINSTANCE hInst;
+int song_sock   = 0;
+ZPlay * netplay = NULL;
 const string SERVICE_REQUEST_STRING = "list-services\n";
+
+void send_ec (int sock, const char* buf, size_t len, int flags);
 
 struct ChannelInfo {
    string name;
@@ -52,7 +54,7 @@ int comm_connect (const char * host, int port) {
 }
 
 void request_services(SOCKET sock) {   
-   send(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
+   send_ec(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
 }
 
 string recv_services (int sd) {
@@ -125,62 +127,62 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 }
 
 ChannelInfo extractChannelInfo(const string& channel) {
-   ChannelInfo ci;
+	ChannelInfo ci;
 
-   ci.name = "The Peak"; // TODO: un-hardcode
-   ci.addr.sin_family = AF_INET;
-   ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
-   ci.addr.sin_port = htons(8910);
-      
-   return ci;
+	ci.name = "The Peak"; // TODO: un-hardcode
+	ci.addr.sin_family = AF_INET;
+	ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
+	ci.addr.sin_port = htons(8910);
+
+	return ci;
 }
 
 DWORD WINAPI join_channel(LPVOID lpParamter) {
-   int error;
-   bool reuseFlag = false;
-   SOCKADDR_IN localAddr, sourceAddr;
-   struct ip_mreq stMreq;
+	int error;
+	bool reuseFlag = false;
+	SOCKADDR_IN localAddr, sourceAddr;
+	struct ip_mreq stMreq;
 
-   // Parse channel info
-   //ChannelInfo ci = extractChannelInfo(*channel);         
-   ChannelInfo ci = extractChannelInfo(string("fsdfsdF"));         
+	// Parse channel info
+	//ChannelInfo ci = extractChannelInfo(*channel);         
+	ChannelInfo ci = extractChannelInfo(string("fsdfsdF"));         
 
-   if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
-      // TODO: error handling
-   }
+	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
+	  // TODO: error handling
+	}
 
-   if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
-      // TODO: error handling
-   }
+	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
+	  // TODO: error handling
+	}
 
-   localAddr.sin_family = AF_INET;
-   localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-   localAddr.sin_port = htons(8910);
+	localAddr.sin_family = AF_INET;
+	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	localAddr.sin_port = htons(8910);
 
-   if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
-      // TODO: error handling
-   }
+	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
+	  // TODO: error handling
+	}
 
-   // Join multicast group
-   memset((char *)&stMreq, 0, sizeof(ip_mreq));
-   stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
-   stMreq.imr_interface.s_addr = INADDR_ANY;   
+	// Join multicast group
+	memset((char *)&stMreq, 0, sizeof(ip_mreq));
+	stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
-   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
-      // TODO: error handling
-   }
+	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
+	  // TODO: error handling
+	}
 
-   netplay->Play();
-      
+	netplay->Play();
+
 	size_t buffed = 0;
 
 	while (true) {
-      // Create a buffer with maximum udp packet size, and recvfrom into it.
+		// Create a buffer with maximum udp packet size, and recvfrom into it.
 		char * buf = new char[65507];
 
-      int addr_size = sizeof(struct sockaddr_in);
-      int r = recvfrom(ci.sock, buf, 65507, 0, (struct sockaddr*)&sourceAddr, &addr_size);
-      		
+		int addr_size = sizeof(struct sockaddr_in);
+		int r = recvfrom(ci.sock, buf, 65507, 0, (struct sockaddr*)&sourceAddr, &addr_size);
+
 		if ( r == -1 ) {
 			int err = WSAGetLastError();
 			if (err == 10054)
@@ -195,13 +197,12 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 		//if (buffed > 800000)
 		//	netplay->Play();
 
-
 		delete buf;
 		if (r == 0)
 			break;
-	}   
+	}
 
-   return 0;
+	return 0;
 }
 
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {

@@ -26,6 +26,7 @@ version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' la
 DWORD WINAPI stream_song_proc(LPVOID lpParamter);
 DWORD WINAPI join_channel(LPVOID lpParamter);
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 void get_and_display_services(int control);
 
 // if sock == 0, it means we're not connected.
@@ -56,6 +57,7 @@ bool check_connected () {
 -- DESIGNER:   David Czech
 --
 -- PROGRAMMER: David Czech
+--				Kevin Tangeman - Created basic client GUI interface layout
 --
 -- INTERFACE:  void create_gui (HWND hWnd)
 --    hwnd - the handle to the client parent window.
@@ -79,76 +81,89 @@ void create_gui (HWND hWnd) {
   SendMessage(
     CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",  // progress bar
       WS_CHILD|WS_VISIBLE|PBS_SMOOTH, 
-      50, 300, 600, 20, hWnd, NULL, hInst, NULL)
+      50, 315, 600, 20, hWnd, NULL, hInst, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Prev button for play control
     CreateWindow("BUTTON", "Prev",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      120, 265, 40, 20, hWnd, (HMENU)IDC_BTN_PREV, NULL, NULL)
+      95, 280, 40, 20, hWnd, (HMENU)IDC_BTN_PREV, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Play button for play control
     CreateWindow("BUTTON", "Play",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      170, 260, 60, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
+      215, 275, 80, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Stop button for play control
+    CreateWindow("BUTTON", "Stop",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      155, 275, 40, 30, hWnd, (HMENU)IDC_BTN_STOP, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Pause button for play control
+    CreateWindow("BUTTON", "Pause",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+      315, 275, 40, 30, hWnd, (HMENU)IDC_BTN_PAUSE, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Next button for play control
     CreateWindow("BUTTON", "Next",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      240, 265, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
+      375, 280, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
-  SendMessage (             // Mic button for using microphone
-    CreateWindow("BUTTON", "Chat",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+//  SendMessage (             // Mic button for using microphone
+//    CreateWindow("BUTTON", "Chat",
+//      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+//      580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
+//    ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Download button for downloading files
-    CreateWindow("BUTTON", "Dn",
+    CreateWindow("BUTTON", "Download",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      315, 260, 30, 30, hWnd, (HMENU)IDC_BTN_DOWNLOAD, NULL, NULL)
+      380, 10, 80, 20, hWnd, (HMENU)IDC_BTN_DOWNLOAD, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Upload button for uploading files
-    CreateWindow("BUTTON", "Up",
+    CreateWindow("BUTTON", "Upload",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      50, 260, 30, 30, hWnd, (HMENU)IDC_BTN_UPLOAD, NULL, NULL)
+      50, 10, 80, 20, hWnd, (HMENU)IDC_BTN_UPLOAD, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   slb = CreateWindow("LISTBOX", "SongList", // Songs can be listed and selected here
     WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    50, 40, 480, 210, hWnd, (HMENU)-1, NULL, NULL)
+    50, 55, 410, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   clb = CreateWindow("LISTBOX", "ChannelList",  // Channels can be listed and selected here
     WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    540, 40, 100, 210, hWnd, (HMENU)-1, NULL, NULL)
+    475, 55, 175, 210, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("STATIC", "Song List",
-      WS_CHILD|WS_VISIBLE|SS_CENTER, 
-      50, 25, 480, 15, hWnd, (HMENU)-1, NULL, NULL)
+    WS_CHILD|WS_VISIBLE|SS_CENTER, 
+    50, 40, 410, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("STATIC", "Channel List",
     WS_CHILD|WS_VISIBLE|SS_CENTER, 
-    540, 25, 100, 15, hWnd, (HMENU)-1, NULL, NULL)
+    475, 40, 175, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   CreateWindow("BUTTON", "Stream",
     WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-    470, 260, 60, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+    475, 275, 175, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
   
   // Connect
+  //DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
   sock = comm_connect(server);
   get_and_display_services(sock);
 }
@@ -289,6 +304,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
        }
+	
+	  case ID_SONGS_STOPSELECTEDSONG:
+	  case IDC_BTN_STOP:
+
+		break;
+
+	  case ID_SONGS_PAUSESELECTEDSONG:
+	  case IDC_BTN_PAUSE:
+
+		break;
+
+	  case ID_SONGS_PLAYPREV:
+	  case IDC_BTN_PREV:
+
+        break;
+
+	  case ID_SONGS_PLAYNEXT:
+      case IDC_BTN_NEXT:
+
+        break;
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
@@ -326,13 +361,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
       }
 
-      case IDC_BTN_PREV:
-
-        break;
-
-      case IDC_BTN_NEXT:
-
-        break;
+	  case ID_SETUP_SELECTSERVER:
+		  DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
+		  break;
 
       case IDM_EXIT:
         DestroyWindow(hWnd);
@@ -378,7 +409,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
    hInst = hInstance; // Store instance handle in our global variable
 
    g_Hwnd = hWnd = CreateWindow("DCA3", "DJK Player", (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX),
-      CW_USEDEFAULT, 0, 700, 380, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, 0, 700, 395, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -452,4 +483,60 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     break;
   }
   return (INT_PTR)FALSE;
+}
+
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   ServerSetup Dialog Box Message Handler
+-- DATE:       Mar 29, 2013
+--
+-- DESIGNER:   Kevin Tangeman
+-- PROGRAMMER: Kevin Tangeman
+--
+-- INTERFACE:  INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+-- RETURNS:    INT_PTR
+--
+-- NOTES: Handles the messages for the Server Setup Dialog Box
+----------------------------------------------------------------------------------------------------------------------*/
+
+INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	HWND hCtl;
+	LPCSTR dlgtext;
+	static HWND addrBox;
+	TCHAR tmpBuffer[256];
+
+	dlgtext = TEXT("");
+
+	switch (message)
+	{
+		case WM_INITDIALOG:
+			addrBox = GetDlgItem(hDlg, IDC_ADDR_HOSTNAME);
+			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, dlgtext);	// clear textbox for address
+			//SendDlgItemMessage(hDlg, IDC_ADDR_HOSTNAME, WM_SETFOCUS, 0, 0);
+			EnableWindow(addrBox, TRUE);
+			break;
+
+		case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+				case IDOK:
+				{
+					// save server name here
+					Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
+					strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
+					//EndDialog(hDlg, LOWORD(wParam));
+					//ShowWindow(hDlg, SW_HIDE);				// hide the dialog box
+					return (INT_PTR)TRUE;
+				}
+
+				case IDCANCEL:
+				{
+					EndDialog(hDlg, LOWORD(wParam));
+					return (INT_PTR)TRUE;
+				}
+			}
+	}
+	return (INT_PTR)FALSE;
 }

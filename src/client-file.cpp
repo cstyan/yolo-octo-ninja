@@ -6,7 +6,6 @@
 #include "commaudio.h"
 #include "client-file.h"
 
-extern const char * server;
 char filename[1024];
 
 typedef struct temp 

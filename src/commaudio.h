@@ -13,6 +13,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <commctrl.h>
+#include <Windowsx.h>
 #include "resource.h"
 
 // Services structure - contains information about available songs, channels, resources etc.
@@ -25,7 +26,7 @@ struct Services {
 
 // Common Networking
 SOCKET create_udp_socket (int port = 0);
-extern const char * server;
+extern char server[256];
 
 // Client Networking
 int comm_connect (const char * host, int port = 1337);

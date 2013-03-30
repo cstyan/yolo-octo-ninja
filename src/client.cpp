@@ -8,8 +8,8 @@
 using namespace std;
 using namespace libZPlay;
 
-// The Server to connect to 
-const char * server = "cookie-monster";
+// The Server to connect to
+char server[256] = {0};
 
 HINSTANCE hInst;
 int song_sock   = 0;

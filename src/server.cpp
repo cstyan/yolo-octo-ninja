@@ -277,7 +277,7 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 ----------------------------------------------------------------------------------------------------------------------*/
 void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize) {
 	char buf[BUFSIZE];
-	size_t s = 0;
+	streamsize s = 0;
 	while (!stream.eof()) {
 		stream.read(buf, BUFSIZE);
 		if (send(sock, buf, stream.gcount(), 0) < 0) {
@@ -305,8 +305,8 @@ void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 ----------------------------------------------------------------------------------------------------------------------*/
 bool validate_param(string param, SOCKET error_sock, string error_msg) {
 	if (param.size() == 0) {
-	  send(error_sock, error_msg.c_str(), error_msg.length(), 0);
-	  return false;
+		send(error_sock, error_msg.c_str(), error_msg.length(), 0);
+		return false;
 	}
 
 	return true;
@@ -331,7 +331,7 @@ void process_download_file (ClientContext * ctx, string song) {
 	// Validate
 	if (!validate_param(song, ctx->control, "Invalid download file request: no file specified!"))
 	  return;
-				
+
 	cout << "Sending file data: " << song << endl;
 
 	// Read file into stringstream
@@ -397,12 +397,12 @@ void process_join_channel(ClientContext * ctx, string channel) {
 	// Validate
 	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
 		return;
-   
-   for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-	  if (it->compare(channel) == 0)
-	  {
 
-	  }
+	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
+		if (it->compare(channel) == 0)
+		{
+
+		}
 }
 
 void process_join_voice(ClientContext * ctx) {   
@@ -436,14 +436,14 @@ void find_songs (std::vector<string>& songs) {
 }
 
 ChannelInfo extractChannelInfo(const string& channel) {
-   ChannelInfo ci;
+	ChannelInfo ci;
 
-   ci.name = "The Peak"; // TODO: un-hardcode
-   ci.addr.sin_family = AF_INET;
-   ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
-   ci.addr.sin_port = htons(8910);
-	  
-   return ci;
+	ci.name = "The Peak"; // TODO: un-hardcode
+	ci.addr.sin_family = AF_INET;
+	ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
+	ci.addr.sin_port = htons(8910);
+
+	return ci;
 }
 
 int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
@@ -453,59 +453,59 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
 			return 2;
 	
-	Sleep(5);
+	//Sleep(50);
 	return 1;
 }
 
 DWORD WINAPI start_channel(LPVOID lpParameter) {
-   int error;
-   u_long ttl = 2;
-   bool loopback = false;
-   SOCKADDR_IN localAddr;
+	int error;
+	u_long ttl = 2;
+	bool loopback = false;
+	SOCKADDR_IN localAddr;
 
-   string *channel = (string*)lpParameter;
+	string *channel = (string*)lpParameter;
 
-   // Parse channel info
-   ChannelInfo ci = extractChannelInfo(*channel);   	
-   
-   // Create socket
-   ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
+	// Parse channel info
+	ChannelInfo ci = extractChannelInfo(*channel);   	
 
-   if (ci.sock == INVALID_SOCKET) {
+	// Create socket
+	ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (ci.sock == INVALID_SOCKET) {
 	  // TODO: error handling
-   }
+	}
 
-   // Bind socket   
-   localAddr.sin_family = AF_INET;
-   localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-   localAddr.sin_port = 0;
+	// Bind socket   
+	localAddr.sin_family = AF_INET;
+	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	localAddr.sin_port = 0;
 
-   if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
+	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
 	  // TODO: error handling
-   }
+	}
 
-   // Join multicast group
-   struct ip_mreq stMreq;
-   memset((char *)&stMreq, 0, sizeof(ip_mreq));
-   stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
-   stMreq.imr_interface.s_addr = INADDR_ANY;   
+	// Join multicast group
+	struct ip_mreq stMreq;
+	memset((char *)&stMreq, 0, sizeof(ip_mreq));
+	stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
-   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
+	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
 	  // TODO: error handling
-   }
+	}
 
-   // Set TTL
-   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl))) == SOCKET_ERROR) {
+	// Set TTL
+	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl))) == SOCKET_ERROR) {
 	  // TODO: error handling
-   }
+	}
 
-   // Disable loopback
-   if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopback, sizeof(loopback))) == SOCKET_ERROR) {
+	// Disable loopback
+	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopback, sizeof(loopback))) == SOCKET_ERROR) {
 	  // TODO: error handling
-   }    
+	}
 
-   // Start streaming
-   // Create zplay Instance
+	// Start streaming
+	// Create zplay Instance
 	ZPlay *out = CreateZPlay();
 	
 	//services_mutex.lock();

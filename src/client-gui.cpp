@@ -16,7 +16,6 @@ using namespace std;
 using namespace libZPlay;
 
 extern ZPlay * netplay;
-extern char * server;
 
 /* Easy styles enabler for msvc */
 #ifdef _MSC_VER
@@ -30,9 +29,25 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 void get_and_display_services(int control);
 
-int sock;
+// if sock == 0, it means we're not connected.
+int sock = 0;
 HWND g_Hwnd, slb, clb;
 extern HINSTANCE hInst;  // current instance from main.cpp
+
+// Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
+void send_ec (int s, const char* buf, size_t len, int flags) {
+  if (send(s, buf, len, flags) < 1) {
+    MessageBox(0, "Disconnected.", "Error while sending to server", 0);
+    sock = 0;
+  }
+}
+
+bool check_connected () {
+  if (sock == 0)
+    MessageBox(0, "Not connected.", "Error", 0);
+
+  return sock != 0;
+}
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   create_gui
@@ -53,7 +68,7 @@ extern HINSTANCE hInst;  // current instance from main.cpp
 ----------------------------------------------------------------------------------------------------------------------*/
 void create_gui (HWND hWnd) {
   HFONT hFont;
-  //HWND heInput;
+
   // Create Input and Output Edit Text controls.
   hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
@@ -153,7 +168,6 @@ void create_gui (HWND hWnd) {
   get_and_display_services(sock);
 }
 
-
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   get_and_display_services
 --
@@ -193,7 +207,21 @@ void get_and_display_services(int control) {
   }
 }
 
-
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   stop_and_reset_player
+--
+-- DATE:       Mar 27, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void stop_and_reset_player()
+--
+-- RETURNS:    nothing
+--
+-- NOTES: Resets Client ZPlay instance (clears all current data in stream) and re-opens a new dynamic stream.
+----------------------------------------------------------------------------------------------------------------------*/
 void stop_and_reset_player() {
   // Close current stream
   netplay->Close();
@@ -243,6 +271,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     wmId    = LOWORD(wParam);
     wmEvent = HIWORD(wParam);
     UNREFERENCED_PARAMETER(wmEvent);
+
+    // If the command requires to be connected to the server,
+    // check that we are in fact, connected to the server before attempting.
+    if ((wmId >= ID_SONGS_PLAYSELECTEDSONG && wmId <= ID_VOICECHAT_CHATWITHSERVER) ||
+        (wmId >= IDC_BTN_STREAM && wmId <= IDC_BTN_CHAT))
+      if (!check_connected())
+        return 0;
+
     // Parse the menu selections:
     switch (wmId) {
       case IDM_ABOUT:
@@ -264,7 +300,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           cout << "Song selected " << song_name << endl;
           // Build and send request line
           string request = "S " + string(song_name) + "\n";
-          send(sock, request.data(), request.size(), 0);
+          send_ec(sock, request.data(), request.size(), 0);
         }
         break;
        }
@@ -313,7 +349,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
         // Before joining the channel stop anything currently playing.
-        send(sock, "stop-stream\n", 14, 0);
+        send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
 
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
@@ -483,9 +519,9 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				case IDOK:									// save server name here
 				{
 					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, msgText, 256);	// get input from edit box
-					server = msgText;						// copy it to the server variable
-					sock = comm_connect(server);
-					get_and_display_services(sock);
+					strcpy(server, msgText);						// copy it to the server variable
+					sock = comm_connect(server);			// re-connect
+					get_and_display_services(sock);			// and get the services
 					EndDialog(hDlg, LOWORD(wParam));		// close the dialog box
 					return (INT_PTR)TRUE;
 				}

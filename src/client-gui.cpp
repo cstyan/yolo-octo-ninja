@@ -159,7 +159,13 @@ void create_gui (HWND hWnd) {
   SendMessage (
   CreateWindow("BUTTON", "Stream",
     WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-    475, 275, 175, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+    475, 275, 125, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("BUTTON", "Stop",
+    WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
+    600, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STREAM_STOP, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
   
   // Show server hostname dialog box.
@@ -302,47 +308,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
        }
+	
+	  case ID_SONGS_STOPSELECTEDSONG:
+	  case IDC_BTN_STOP:
 
-      case ID_SONGS_STOPSELECTEDSONG:
-      case IDC_BTN_STOP:
-        netplay->Stop();
-        SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+		break;
+
+	  case ID_SONGS_PAUSESELECTEDSONG:
+	  case IDC_BTN_PAUSE:
+
+		break;
+
+	  case ID_SONGS_PLAYPREV:
+	  case IDC_BTN_PREV:
+
         break;
 
-      case ID_SONGS_PAUSESELECTEDSONG:
-      case IDC_BTN_PAUSE: {
-        TStreamStatus status;
-        netplay->GetStatus(&status);
-        if (status.fPause){
-          if (netplay->Resume())
-            SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
-        } else
-          if (netplay->Pause())
-              SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
-        }
-        break;
-
-      case ID_SONGS_PLAYPREV:
-      case IDC_BTN_PREV:
-        break;
-
-      case ID_SONGS_PLAYNEXT:
+	  case ID_SONGS_PLAYNEXT:
       case IDC_BTN_NEXT:
+
         break;
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
-        // Send voice chat request
-        // recv thread?
-        // start microphone stream
-      break;
-      case WM_USER:
         get_and_display_services(sock);
         break;
 
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
         uploadFile(1337);
+
+		get_and_display_services(sock);
         break;
 
       case IDC_BTN_DOWNLOAD:
@@ -352,7 +348,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
           downloadFile(1337, song_name);
-        }
+		  }
         break;
         }
       
@@ -364,12 +360,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
-              char* channel = new char[BUFSIZE];
-              SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);          
-          CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+            char* channel = new char[BUFSIZE];
+            SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);          
+			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
         }
         break;
-      }
+	  }
+
+	  case IDC_BTN_STREAM_STOP:
+	  case ID_CHANNELS_STOPSTREAMING:
+		// code to stop streaming the current channel to be added here
+		MessageBox(0, "Stopping the stream", "Stream stopping", 0); // remove when done
+		break;
 
       case ID_SETUP_SELECTSERVER:
         if (sock != 0) {
@@ -379,11 +381,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
         break;
 
+	  case ID_FILE_REFRESHSERVICES:
+		  get_and_display_services(sock);
+		  break;
+
       case IDM_EXIT:
-        DestroyWindow(hWnd);
-        break;
+		  DestroyWindow(hWnd);
+          break;
+
       default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+          return DefWindowProc(hWnd, message, wParam, lParam);
       }
   break;
 
@@ -516,38 +523,24 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	LPCSTR dlgtext;
-	static HWND addrBox;
-	TCHAR tmpBuffer[256];
-
-	dlgtext = TEXT("");
 
 	switch (message)
 	{
 		case WM_INITDIALOG:
 			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server);
-			//SendDlgItemMessage(hDlg, IDC_ADDR_HOSTNAME, WM_SETFOCUS, 0, 0);
-			EnableWindow(addrBox, TRUE);
 			break;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDOK:
+				case IDOK:		// get server name here
 				{
-					// save server name here
-					//Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
-					//strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
-          GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
-
-          sock = comm_connect(server);
-
-          if (sock) {
-            get_and_display_services(sock);
-            EndDialog(hDlg, LOWORD(wParam));
-          }
-
-					//ShowWindow(hDlg, SW_HIDE);				// hide the dialog box
+					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
+					sock = comm_connect(server);
+					if (sock) {
+						get_and_display_services(sock);
+						EndDialog(hDlg, LOWORD(wParam));
+					}
 					return (INT_PTR)TRUE;
 				}
 

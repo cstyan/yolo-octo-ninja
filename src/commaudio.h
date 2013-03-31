@@ -29,6 +29,7 @@ SOCKET create_udp_socket (int port = 0);
 
 // Client Networking
 extern char server[256];
+extern int sock;
 int comm_connect (const char * host, int port = 1337);
 void request_services(SOCKET sock);
 std::string recv_services (int sd);
@@ -38,6 +39,7 @@ void ParseServicesList(std::string list, Services& s);
 std::string ListServices(const Services& s);
 void printStruct(const Services& s);
 bool parse_ip_port (std::string& s, std::string& ip, unsigned short& port);
+void get_and_display_services(int control);
 
 // GUI (these prototypes are valid for both client and server, but implemented differently!)
 void create_gui (HWND hWnd);

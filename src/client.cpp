@@ -115,9 +115,7 @@ void stream_song () {
 
 		// Might need to protect this with mutex if client GUI modifies netplay as well.
 		netplay->PushDataToStream(buf, r);
-
 	}
-
 	closesocket(song_sock);
 }
 

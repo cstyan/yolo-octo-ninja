@@ -148,7 +148,7 @@ void create_gui (HWND hWnd) {
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
   
   // Connect
-  //DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
+  DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
   sock = comm_connect(server);
   get_and_display_services(sock);
 }
@@ -466,32 +466,27 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	HWND hCtl;
 	LPCSTR dlgtext;
 	static HWND addrBox;
-	TCHAR tmpBuffer[256];
-
-	dlgtext = TEXT("");
+	char msgText[256] = {0};
 
 	switch (message)
 	{
 		case WM_INITDIALOG:
-			addrBox = GetDlgItem(hDlg, IDC_ADDR_HOSTNAME);
+			dlgtext = server;		// displays the current server in the dialog box
 			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, dlgtext);	// clear textbox for address
-			//SendDlgItemMessage(hDlg, IDC_ADDR_HOSTNAME, WM_SETFOCUS, 0, 0);
-			EnableWindow(addrBox, TRUE);
 			break;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDOK:
+				case IDOK:									// save server name here
 				{
-					// save server name here
-					Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
-					strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
-					//EndDialog(hDlg, LOWORD(wParam));
-					//ShowWindow(hDlg, SW_HIDE);				// hide the dialog box
+					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, msgText, 256);	// get input from edit box
+					server = msgText;						// copy it to the server variable
+					sock = comm_connect(server);
+					get_and_display_services(sock);
+					EndDialog(hDlg, LOWORD(wParam));		// close the dialog box
 					return (INT_PTR)TRUE;
 				}
 

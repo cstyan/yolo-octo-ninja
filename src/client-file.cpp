@@ -6,16 +6,17 @@
 #include "commaudio.h"
 #include "client-file.h"
 
-char filename[1024];
-
 typedef struct temp 
 {
 	uData tempData;
 	std::string file;
 } tempor;
 DWORD WINAPI DownloadThread(LPVOID lpParameter);
+
 tempor t;
 uData upload;
+char filename[1024];
+extern int sock;
 
 #define MSG_WAITALL 0x8
 using namespace std;
@@ -427,12 +428,12 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 		memset(sbuf, 0, sizeof(sbuf));
 	}
 
-	// get and display services()
-	//if (sock)
-	//	get_and_display_services(sock);
-
 	fclose(fp);
 	closesocket (sd);
+
+	// After the socket is closed, the file is flushed.
+	get_and_display_services(sock);
+
 	WSACleanup();
 	return 1;
 }

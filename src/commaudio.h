@@ -30,6 +30,7 @@ SOCKET create_udp_socket (int port = 0);
 // Client Networking
 extern char server[256];
 extern int sock;
+void send_ec (int sock, const char* buf, size_t len, int flags);
 int comm_connect (const char * host, int port = 1337);
 void request_services(SOCKET sock);
 std::string recv_services (int sd);

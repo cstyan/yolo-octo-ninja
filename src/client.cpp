@@ -17,8 +17,6 @@ int song_sock   = 0;
 ZPlay * netplay = NULL;
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
-void send_ec (int sock, const char* buf, size_t len, int flags);
-
 struct ChannelInfo {
    string name;
    SOCKET sock;   

@@ -32,7 +32,7 @@ void get_and_display_services(int control);
 
 // if sock == 0, it means we're not connected.
 int sock = 0;
-HWND g_Hwnd, slb, clb;
+HWND g_Hwnd, slb, clb, progress;
 extern HINSTANCE hInst;  // current instance from main.cpp
 
 // Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
@@ -80,8 +80,8 @@ void create_gui (HWND hWnd) {
   InitCommonControlsEx(&InitCtrlEx);
 
   SendMessage(
-    CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",  // progress bar
-      WS_CHILD|WS_VISIBLE|PBS_SMOOTH, 
+    progress = CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",  // progress bar
+      WS_CHILD|WS_VISIBLE|PBS_SMOOTH|PBS_MARQUEE,
       50, 315, 600, 20, hWnd, NULL, hInst, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
@@ -296,7 +296,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
           stop_and_reset_player();
-
+          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
           // Play thread needs control channel socket and pointer to zplayer instance.
           int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
           if (lbItem != LB_ERR) {
@@ -312,6 +312,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_STOPSELECTEDSONG:
       case IDC_BTN_STOP:
+        SendMessage(progress, PBM_SETPOS, 0, 0);
+        SendMessage(progress, PBM_SETMARQUEE, 0, 0);
         send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
         netplay->Stop();

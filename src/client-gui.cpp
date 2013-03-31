@@ -359,13 +359,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
       }
 
-	  case ID_SETUP_SELECTSERVER:
-		  if (sock != 0) {  
-			  closesocket(sock);  
-			  sock = 0;  
-		  }  
-		  DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
-		  break;
+      case ID_SETUP_SELECTSERVER:
+        if (sock != 0) {
+          closesocket(sock);
+          sock = 0;
+        }
+        DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
+        break;
 
 	  case ID_FILE_REFRESHSERVICES:
 		  get_and_display_services(sock);

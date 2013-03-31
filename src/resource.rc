@@ -40,6 +40,7 @@ IDC_DCWIN1 MENU
 BEGIN
     POPUP "File"
     BEGIN
+        MENUITEM "Select Server",               ID_SETUP_SELECTSERVER
         MENUITEM "Exit",                        IDM_EXIT
     END
     POPUP "Songs"
@@ -60,10 +61,6 @@ BEGIN
     POPUP "Voice Chat"
     BEGIN
         MENUITEM "Chat with Server",            ID_VOICECHAT_CHATWITHSERVER
-    END
-    POPUP "Setup"
-    BEGIN
-        MENUITEM "Select Server",               ID_SETUP_SELECTSERVER
     END
     POPUP "&Help"
     BEGIN

@@ -162,10 +162,8 @@ void create_gui (HWND hWnd) {
     475, 275, 175, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
   
-  // Connect
-  //DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
-  sock = comm_connect(server);
-  get_and_display_services(sock);
+  // Show server hostname dialog box.
+  DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -525,7 +523,13 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 					// save server name here
 					Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
 					strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
-					//EndDialog(hDlg, LOWORD(wParam));
+          sock = comm_connect(server);
+
+          if (sock) {
+            get_and_display_services(sock);
+            EndDialog(hDlg, LOWORD(wParam));
+          }
+
 					//ShowWindow(hDlg, SW_HIDE);				// hide the dialog box
 					return (INT_PTR)TRUE;
 				}

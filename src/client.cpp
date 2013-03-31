@@ -36,8 +36,8 @@ int comm_connect (const char * host, int port) {
 	
 	if ((hp = gethostbyname(host)) == NULL)
 	{
-		cerr << "Unknown server address" << endl;
-		exit(1);
+		MessageBox(0, "Unknown server address", "Error Connecting.", 0);
+		return 0;
 	}
 
 	// Copy the server address
@@ -46,8 +46,8 @@ int comm_connect (const char * host, int port) {
 	// Connecting to the server
 	if (connect (sd, (struct sockaddr *)&server, sizeof(server)) == -1)
 	{
-		cerr << "Can't connect to server\n" << endl;
-		exit(1);
+		MessageBox(0, "Can't connect to server", "Error Connecting.", 0);
+		return 0;
 	}
 
 	return sd;

@@ -51,22 +51,22 @@ bool check_connected () {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   create_gui
---
--- DATE:       Mar 23, 2013
---
--- DESIGNER:   David Czech
---
--- PROGRAMMER: David Czech
---				Kevin Tangeman - Created basic client GUI interface layout
---
--- INTERFACE:  void create_gui (HWND hWnd)
---    hwnd - the handle to the client parent window.
---
--- RETURNS:    nothing
---
--- NOTES: Populate the parent hwnd with the GUI for the client (listboxes, buttons, etc).
-----------------------------------------------------------------------------------------------------------------------*/
+  -- FUNCTION:   create_gui
+  --
+  -- DATE:       Mar 23, 2013
+  --
+  -- DESIGNER:   David Czech
+  --
+  -- PROGRAMMER: David Czech
+  --				Kevin Tangeman - Created basic client GUI interface layout
+  --
+  -- INTERFACE:  void create_gui (HWND hWnd)
+  --    hwnd - the handle to the client parent window.
+  --
+  -- RETURNS:    nothing
+  --
+  -- NOTES: Populate the parent hwnd with the GUI for the client (listboxes, buttons, etc).
+  --------------------------------------------------------------------------------------------------------------------*/
 void create_gui (HWND hWnd) {
   HFONT hFont;
   //HWND heInput;
@@ -115,11 +115,11 @@ void create_gui (HWND hWnd) {
       375, 280, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
-//  SendMessage (             // Mic button for using microphone
-//    CreateWindow("BUTTON", "Chat",
-//      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-//      580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
-//    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+  /*SendMessage (             // Mic button for using microphone
+   CreateWindow("BUTTON", "Chat",
+     WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
+     580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
+   ,WM_SETFONT, (WPARAM)hFont, TRUE);*/
 
   SendMessage (             // Download button for downloading files
     CreateWindow("BUTTON", "Download",
@@ -174,20 +174,20 @@ void create_gui (HWND hWnd) {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   get_and_display_services
---
--- DATE:       Mar 23, 2013
---
--- DESIGNER:   David Czech
---
--- PROGRAMMER: David Czech
---
--- INTERFACE:  void get_and_display_services(int control)
---
--- RETURNS:    nothing
---
--- NOTES: Request services from server, recieve its reply and populate the listboxes in the GUI with the data.
-----------------------------------------------------------------------------------------------------------------------*/
+  -- FUNCTION:   get_and_display_services
+  --
+  -- DATE:       Mar 23, 2013
+  --
+  -- DESIGNER:   David Czech
+  --
+  -- PROGRAMMER: David Czech
+  --
+  -- INTERFACE:  void get_and_display_services(int control)
+  --
+  -- RETURNS:    nothing
+  --
+  -- NOTES: Request services from server, recieve its reply and populate the listboxes in the GUI with the data.
+  --------------------------------------------------------------------------------------------------------------------*/
 void get_and_display_services(int control) {
   // Clear List boxes.
   SendMessage(slb, LB_RESETCONTENT, 0, 0);
@@ -213,20 +213,20 @@ void get_and_display_services(int control) {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   stop_and_reset_player
---
--- DATE:       Mar 27, 2013
---
--- DESIGNER:   David Czech
---
--- PROGRAMMER: David Czech
---
--- INTERFACE:  void stop_and_reset_player()
---
--- RETURNS:    nothing
---
--- NOTES: Resets Client ZPlay instance (clears all current data in stream) and re-opens a new dynamic stream.
-----------------------------------------------------------------------------------------------------------------------*/
+  -- FUNCTION:   stop_and_reset_player
+  --
+  -- DATE:       Mar 27, 2013
+  --
+  -- DESIGNER:   David Czech
+  --
+  -- PROGRAMMER: David Czech
+  --
+  -- INTERFACE:  void stop_and_reset_player()
+  --
+  -- RETURNS:    nothing
+  --
+  -- NOTES: Resets Client ZPlay instance (clears all current data in stream) and re-opens a new dynamic stream.
+  ----------------------------------------------------------------------------------------------------------------------*/
 void stop_and_reset_player() {
   // Close current stream
   netplay->Close();
@@ -520,18 +520,17 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   ServerSetup Dialog Box Message Handler
--- DATE:       Mar 29, 2013
---
--- DESIGNER:   Kevin Tangeman
--- PROGRAMMER: Kevin Tangeman
---
--- INTERFACE:  INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
--- RETURNS:    INT_PTR
---
--- NOTES: Handles the messages for the Server Setup Dialog Box
-----------------------------------------------------------------------------------------------------------------------*/
-
+  -- FUNCTION:   ServerSetup Dialog Box Message Handler
+  -- DATE:       Mar 29, 2013
+  --
+  -- DESIGNER:   Kevin Tangeman
+  -- PROGRAMMER: Kevin Tangeman
+  --
+  -- INTERFACE:  INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+  -- RETURNS:    INT_PTR
+  --
+  -- NOTES: Handles the messages for the Server Setup Dialog Box
+  ----------------------------------------------------------------------------------------------------------------------*/
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);

@@ -309,17 +309,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           }
           break;
          }
-	
-  	  case ID_SONGS_STOPSELECTEDSONG:
-  	  case IDC_BTN_STOP:
+
+      case ID_SONGS_STOPSELECTEDSONG:
+      case IDC_BTN_STOP:
         send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
         netplay->Stop();
         SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
         break;
 
-  	  case ID_SONGS_PAUSESELECTEDSONG:
-  	  case IDC_BTN_PAUSE:
+      case ID_SONGS_PAUSESELECTEDSONG:
+      case IDC_BTN_PAUSE:
         TStreamStatus status;
         netplay->GetStatus(&status);
         if (status.fPause) {
@@ -331,11 +331,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-  	  case ID_SONGS_PLAYPREV:
-  	  case IDC_BTN_PREV:
+      case ID_SONGS_PLAYPREV:
+      case IDC_BTN_PREV:
         break;
 
-  	  case ID_SONGS_PLAYNEXT:
+      case ID_SONGS_PLAYNEXT:
       case IDC_BTN_NEXT:
         break;
 
@@ -402,9 +402,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
       default:
-          return DefWindowProc(hWnd, message, wParam, lParam);
+        return DefWindowProc(hWnd, message, wParam, lParam);
       }
-  break;
+    break;
 
   case WM_PAINT  :
     hdc = BeginPaint(hWnd, &ps);

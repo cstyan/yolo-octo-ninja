@@ -509,8 +509,7 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 	switch (message)
 	{
 		case WM_INITDIALOG:
-			addrBox = GetDlgItem(hDlg, IDC_ADDR_HOSTNAME);
-			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, dlgtext);	// clear textbox for address
+			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server);
 			//SendDlgItemMessage(hDlg, IDC_ADDR_HOSTNAME, WM_SETFOCUS, 0, 0);
 			EnableWindow(addrBox, TRUE);
 			break;
@@ -521,8 +520,10 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				case IDOK:
 				{
 					// save server name here
-					Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
-					strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
+					//Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
+					//strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
+          GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
+
           sock = comm_connect(server);
 
           if (sock) {

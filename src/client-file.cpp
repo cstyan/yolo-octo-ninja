@@ -369,7 +369,7 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 
 
 	// ------------------------------------------------------------------------------------------
-	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE SERVER ADDRESS
+	// NOTE: I AM HARDCODING THE IP. THIS HAS TO CHANGE TO THE SERVER ADDRESS - done! is now "server"
 	// ------------------------------------------------------------------------------------------
 	if ((hp = gethostbyname(server)) == NULL)
 	{
@@ -428,7 +428,8 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	}
 
 	// get and display services()
-
+	//if (sock)
+	//	get_and_display_services(sock);
 
 	fclose(fp);
 	closesocket (sd);

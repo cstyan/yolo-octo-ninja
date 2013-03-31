@@ -11,6 +11,7 @@
 #define IDI_DCWIN1                      107
 #define IDI_SMALL                       108
 #define IDC_DCWIN1                      109
+#define IDC_BTN_STREAM_STOP             199
 #define IDC_BTN_STREAM                  200
 #define IDC_BTN_PREV                    201
 #define IDC_BTN_PLAY                    202
@@ -34,6 +35,7 @@
 #define ID_SONGS_PLAYNEXT               40015
 #define ID_SETUP_SELECTSERVER           40017
 #define ID_FILE_REFRESHSERVICES         40018
+#define ID_CHANNELS_STOPSTREAMING       40019
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -41,7 +43,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102
-#define _APS_NEXT_COMMAND_VALUE         40019
+#define _APS_NEXT_COMMAND_VALUE         40020
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

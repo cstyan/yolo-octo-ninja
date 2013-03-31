@@ -59,6 +59,7 @@ BEGIN
     POPUP "Channels"
     BEGIN
         MENUITEM "Stream Selected Channel",     ID_CHANNELS_STREAMSELECTEDCHANNEL
+        MENUITEM "Stop Streaming",              ID_CHANNELS_STOPSTREAMING
     END
     POPUP "Voice Chat"
     BEGIN

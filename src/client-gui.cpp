@@ -159,7 +159,13 @@ void create_gui (HWND hWnd) {
   SendMessage (
   CreateWindow("BUTTON", "Stream",
     WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
-    475, 275, 175, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+    475, 275, 125, 30, hWnd, (HMENU)IDC_BTN_STREAM, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("BUTTON", "Stop",
+    WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
+    600, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STREAM_STOP, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
   
   // Show server hostname dialog box.
@@ -331,6 +337,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
         uploadFile(1337);
+
+		get_and_display_services(sock);
         break;
 
       case IDC_BTN_DOWNLOAD:
@@ -357,7 +365,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
         }
         break;
-      }
+	  }
+
+	  case IDC_BTN_STREAM_STOP:
+	  case ID_CHANNELS_STOPSTREAMING:
+		// code to stop streaming the current channel to be added here
+		MessageBox(0, "Stopping the stream", "Stream stopping", 0); // remove when done
+		break;
 
       case ID_SETUP_SELECTSERVER:
         if (sock != 0) {
@@ -509,11 +523,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	//LPCSTR dlgtext;
-	//static HWND addrBox;
-	//TCHAR tmpBuffer[256];
-
-	//dlgtext = TEXT("");
 
 	switch (message)
 	{

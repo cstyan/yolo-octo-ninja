@@ -12,6 +12,7 @@ using namespace libZPlay;
 char server[256] = "localhost";
 
 HINSTANCE hInst;
+bool keep_streaming_channel = true;
 int song_sock   = 0;
 ZPlay * netplay = NULL;
 const string SERVICE_REQUEST_STRING = "list-services\n";
@@ -147,6 +148,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
 	  // TODO: error handling
+		cout << "error socket" << endl;
 	}
 
 	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
@@ -159,6 +161,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
 	  // TODO: error handling
+		cout << "error bind" << endl;
 	}
 
 	// Join multicast group
@@ -168,13 +171,15 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
 	  // TODO: error handling
+		cout << "error multicast" << endl;
 	}
 
 	netplay->Play();
 
 	size_t buffed = 0;
 
-	while (true) {
+	// While play isn't stopped 
+	while (keep_streaming_channel) {
 		// Create a buffer with maximum udp packet size, and recvfrom into it.
 		char * buf = new char[65507];
 
@@ -199,7 +204,8 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 		if (r == 0)
 			break;
 	}
-
+	cout << "Closing socket" << endl;
+	closesocket(ci.sock);
 	return 0;
 }
 

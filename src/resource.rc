@@ -48,7 +48,7 @@ BEGIN
     POPUP "Songs"
     BEGIN
         MENUITEM "Play",                        ID_SONGS_PLAYSELECTEDSONG
-        MENUITEM "Pause",                       ID_SONGS_PAUSESELECTEDSONG
+        MENUITEM "Pause/Resume",                       ID_SONGS_PAUSESELECTEDSONG
         MENUITEM "Stop",                        ID_SONGS_STOPSELECTEDSONG
         MENUITEM "Prev",                        ID_SONGS_PLAYPREV
         MENUITEM "Next",                        ID_SONGS_PLAYNEXT

@@ -15,6 +15,7 @@
 using namespace std;
 using namespace libZPlay;
 
+extern bool keep_streaming_channel;
 extern ZPlay * netplay;
 
 /* Easy styles enabler for msvc */
@@ -291,54 +292,64 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
-        // The stop-stream command isn't necessary here:
-        // the server will just switch the current playing song.
-        //send(sock, "stop-stream\n", 14, 0);
-        stop_and_reset_player();
+          // The stop-stream command isn't necessary here:
+          // the server will just switch the current playing song.
+          //send(sock, "stop-stream\n", 14, 0);
+          stop_and_reset_player();
 
-        // Play thread needs control channel socket and pointer to zplayer instance.
-        int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
-        if (lbItem != LB_ERR) {
-          char* song_name = new char[BUFSIZE];
-          SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
-          cout << "Song selected " << song_name << endl;
-          // Build and send request line
-          string request = "S " + string(song_name) + "\n";
-          send_ec(sock, request.data(), request.size(), 0);
+          // Play thread needs control channel socket and pointer to zplayer instance.
+          int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
+          if (lbItem != LB_ERR) {
+            char* song_name = new char[BUFSIZE];
+            SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
+            cout << "Song selected " << song_name << endl;
+            // Build and send request line
+            string request = "S " + string(song_name) + "\n";
+            send_ec(sock, request.data(), request.size(), 0);
+          }
+          break;
+         }
+	
+  	  case ID_SONGS_STOPSELECTEDSONG:
+  	  case IDC_BTN_STOP:
+        send_ec(sock, "stop-stream\n", 14, 0);
+        stop_and_reset_player();
+        netplay->Stop();
+        SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+        break;
+
+  	  case ID_SONGS_PAUSESELECTEDSONG:
+  	  case IDC_BTN_PAUSE:
+        TStreamStatus status;
+        netplay->GetStatus(&status);
+        if (status.fPause) {
+          if (netplay->Resume())
+            SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+        } else {
+          if (netplay->Pause()) 
+              SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
         }
         break;
-       }
-	
-	  case ID_SONGS_STOPSELECTEDSONG:
-	  case IDC_BTN_STOP:
 
-		break;
-
-	  case ID_SONGS_PAUSESELECTEDSONG:
-	  case IDC_BTN_PAUSE:
-
-		break;
-
-	  case ID_SONGS_PLAYPREV:
-	  case IDC_BTN_PREV:
-
+  	  case ID_SONGS_PLAYPREV:
+  	  case IDC_BTN_PREV:
         break;
 
-	  case ID_SONGS_PLAYNEXT:
+  	  case ID_SONGS_PLAYNEXT:
       case IDC_BTN_NEXT:
-
         break;
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
-        get_and_display_services(sock);
+        // Send voice chat request
+        send_ec(sock, "V\n", 2, 0);
+        // recv thread?
+        // start microphone stream
         break;
 
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
         uploadFile(1337);
-
-		get_and_display_services(sock);
         break;
 
       case IDC_BTN_DOWNLOAD:
@@ -348,46 +359,47 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
           downloadFile(1337, song_name);
-		  }
-        break;
         }
+        break;
+      }
       
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
+        keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
         send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
 
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
-            char* channel = new char[BUFSIZE];
-            SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);          
-			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+          char* channel = new char[BUFSIZE];
+          SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
+          CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
         }
         break;
-	  }
+      }
 
-	  case IDC_BTN_STREAM_STOP:
-	  case ID_CHANNELS_STOPSTREAMING:
-		// code to stop streaming the current channel to be added here
-		MessageBox(0, "Stopping the stream", "Stream stopping", 0); // remove when done
-		break;
+      case IDC_BTN_STREAM_STOP:
+      case ID_CHANNELS_STOPSTREAMING:
+        keep_streaming_channel = false;
+       break;
 
       case ID_SETUP_SELECTSERVER:
         if (sock != 0) {
+          send(sock, "stop-stream\n", 14, 0);
           closesocket(sock);
           sock = 0;
         }
         DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
         break;
 
-	  case ID_FILE_REFRESHSERVICES:
-		  get_and_display_services(sock);
-		  break;
+      case ID_FILE_REFRESHSERVICES:
+        get_and_display_services(sock);
+        break;
 
       case IDM_EXIT:
-		  DestroyWindow(hWnd);
-          break;
+        DestroyWindow(hWnd);
+        break;
 
       default:
           return DefWindowProc(hWnd, message, wParam, lParam);

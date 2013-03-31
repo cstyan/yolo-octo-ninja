@@ -158,7 +158,7 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 				else if (req_command == "S")
 					process_stream_song(ctx, param);
 				else if (req_command == "U")
-					process_upload_song(ctx, param);            
+					process_upload_song(ctx, param);
 				else if (req_command == "C")
 					process_join_channel(ctx, param);
 			}
@@ -405,7 +405,24 @@ void process_join_channel(ClientContext * ctx, string channel) {
 		}
 }
 
-void process_join_voice(ClientContext * ctx) {   
+void process_join_voice(ClientContext * ctx) {
+	cout << "voice" << endl;
+	if (ctx->decoder)
+		ctx->decoder->ReverseMode(1);
+
+	// Only allow one microphone user, like a sempahore.
+	if (s.microphone) {
+		s.microphone = false;
+		// Open microphone input stream
+		// Open remote microphone playback stream
+		// set callback to stream to client (reuse stream_cb?)
+
+		// main loop:
+		// 	Recv from client
+		// 	push data to stream
+	}
+
+	s.microphone = true;
 }
 
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
@@ -453,11 +470,12 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
 			return 2;
 	
-	//Sleep(50);
+	Sleep(100);
 	return 1;
 }
 
 DWORD WINAPI start_channel(LPVOID lpParameter) {
+	//return 0;
 	int error;
 	u_long ttl = 2;
 	bool loopback = false;

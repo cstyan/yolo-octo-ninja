@@ -302,29 +302,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
        }
-	
-	  case ID_SONGS_STOPSELECTEDSONG:
-	  case IDC_BTN_STOP:
 
-		break;
-
-	  case ID_SONGS_PAUSESELECTEDSONG:
-	  case IDC_BTN_PAUSE:
-
-		break;
-
-	  case ID_SONGS_PLAYPREV:
-	  case IDC_BTN_PREV:
-
+      case ID_SONGS_STOPSELECTEDSONG:
+      case IDC_BTN_STOP:
+        netplay->Stop();
+        SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
         break;
 
-	  case ID_SONGS_PLAYNEXT:
-      case IDC_BTN_NEXT:
+      case ID_SONGS_PAUSESELECTEDSONG:
+      case IDC_BTN_PAUSE: {
+        TStreamStatus status;
+        netplay->GetStatus(&status);
+        if (status.fPause){
+          if (netplay->Resume())
+            SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+        } else
+          if (netplay->Pause())
+              SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
+        }
+        break;
 
+      case ID_SONGS_PLAYPREV:
+      case IDC_BTN_PREV:
+        break;
+
+      case ID_SONGS_PLAYNEXT:
+      case IDC_BTN_NEXT:
         break;
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
+        // Send voice chat request
+        // recv thread?
+        // start microphone stream
+      break;
+      case WM_USER:
         get_and_display_services(sock);
         break;
 

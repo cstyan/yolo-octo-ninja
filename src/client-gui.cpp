@@ -340,7 +340,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
           downloadFile(1337, song_name);
-        }
+		  }
         break;
         }
       
@@ -352,22 +352,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
-              char* channel = new char[BUFSIZE];
-              SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);          
-          CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+            char* channel = new char[BUFSIZE];
+            SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);          
+			CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
         }
         break;
       }
 
 	  case ID_SETUP_SELECTSERVER:
+		  if (sock != 0) {  
+			  closesocket(sock);  
+			  sock = 0;  
+		  }  
 		  DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
 		  break;
 
+	  case ID_FILE_REFRESHSERVICES:
+		  get_and_display_services(sock);
+		  break;
+
       case IDM_EXIT:
-        DestroyWindow(hWnd);
-        break;
+		  DestroyWindow(hWnd);
+          break;
+
       default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+          return DefWindowProc(hWnd, message, wParam, lParam);
       }
   break;
 
@@ -500,38 +509,29 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
-	LPCSTR dlgtext;
-	static HWND addrBox;
-	TCHAR tmpBuffer[256];
+	//LPCSTR dlgtext;
+	//static HWND addrBox;
+	//TCHAR tmpBuffer[256];
 
-	dlgtext = TEXT("");
+	//dlgtext = TEXT("");
 
 	switch (message)
 	{
 		case WM_INITDIALOG:
 			SetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server);
-			//SendDlgItemMessage(hDlg, IDC_ADDR_HOSTNAME, WM_SETFOCUS, 0, 0);
-			EnableWindow(addrBox, TRUE);
 			break;
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
-				case IDOK:
+				case IDOK:		// get server name here
 				{
-					// save server name here
-					//Edit_GetText(addrBox, tmpBuffer, 256);		// get input from edit box
-					//strcpy(server, (char*)tmpBuffer);		// copy it to the comData struct
-          GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
-
-          sock = comm_connect(server);
-
-          if (sock) {
-            get_and_display_services(sock);
-            EndDialog(hDlg, LOWORD(wParam));
-          }
-
-					//ShowWindow(hDlg, SW_HIDE);				// hide the dialog box
+					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
+					sock = comm_connect(server);
+					if (sock) {
+						get_and_display_services(sock);
+						EndDialog(hDlg, LOWORD(wParam));
+					}
 					return (INT_PTR)TRUE;
 				}
 

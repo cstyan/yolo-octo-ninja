@@ -427,6 +427,9 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 		memset(sbuf, 0, sizeof(sbuf));
 	}
 
+	// get and display services()
+
+
 	fclose(fp);
 	closesocket (sd);
 	WSACleanup();

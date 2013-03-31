@@ -9,7 +9,7 @@ using namespace std;
 using namespace libZPlay;
 
 // The Server to connect to
-char server[256] = {0};
+char server[256] = "localhost";
 
 HINSTANCE hInst;
 int song_sock   = 0;

@@ -22,7 +22,7 @@
 #define IDC_BTN_PAUSE                   208
 #define IDC_LIBZPLAY_VERSION            1000
 #define IDC_ADDR_HOSTNAME               1001
-
+#define BUFSIZE                         1024
 #define ID_SONGS_PLAYSELECTEDSONG       40002
 #define ID_SONGS_DOWNLOADSELECTEDSONG   40003
 #define ID_SONGS_UPLOADSONGTOLIST       40004
@@ -33,16 +33,15 @@
 #define ID_SONGS_PLAYPREV               40014
 #define ID_SONGS_PLAYNEXT               40015
 #define ID_SETUP_SELECTSERVER           40017
+#define ID_FILE_REFRESHSERVICES         40018
 #define IDC_STATIC                      -1
-
-#define BUFSIZE                         1024
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102
-#define _APS_NEXT_COMMAND_VALUE         40018
+#define _APS_NEXT_COMMAND_VALUE         40019
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

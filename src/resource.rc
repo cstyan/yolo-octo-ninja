@@ -41,6 +41,8 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "Select Server",               ID_SETUP_SELECTSERVER
+        MENUITEM "Refresh Services",            ID_FILE_REFRESHSERVICES
+        MENUITEM SEPARATOR
         MENUITEM "Exit",                        IDM_EXIT
     END
     POPUP "Songs"

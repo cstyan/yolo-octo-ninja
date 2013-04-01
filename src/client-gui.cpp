@@ -258,7 +258,7 @@ void stop_and_reset_player() {
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  int wmId, wmEvent;
+  int wmId, wmEvent, countItem, indexItem = -1;
   HDC   hdc;
   PAINTSTRUCT ps;
   RECT  rect;
@@ -350,10 +350,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYPREV:
       case IDC_BTN_PREV:
-        break;
+		indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0);	// gets current selectin index
+        
+		if (indexItem != LB_ERR) {
+		  indexItem -= 1;			// decrements it to get prev index
+		  
+		  if(indexItem >= 0){		// make sure current selection wasn't already first in list
+	  	    SendMessage(slb, LB_SETCURSEL, indexItem, 0);		// select prev song in list
+		    SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
+		  }
+		}
+		break;
 
       case ID_SONGS_PLAYNEXT:
       case IDC_BTN_NEXT:
+		indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 	// gets current selection index
+        
+		if (indexItem != LB_ERR) {
+		  indexItem += 1;			// increments it to get next index
+		  countItem = (int)SendMessage(slb, LB_GETCOUNT, 0, 0);	// get count of items in list
+		  
+		  // make sure current selection wasn't already last in list
+		  if((countItem != LB_ERR) && (indexItem < countItem)){
+		    SendMessage(slb, LB_SETCURSEL, indexItem, 0); 		// select prev song in list
+		    SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
+		  }
+		}
         break;
 
       case IDC_BTN_CHAT:

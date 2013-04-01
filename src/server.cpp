@@ -14,13 +14,6 @@ using namespace libZPlay;
 Services s;
 //std::mutex services_mutex; // std::mutex is C++11, we'll  probably have to use win32 mutex.
 
-struct ClientContext {
-	SOCKET control;
-	SOCKET udp;
-	sockaddr_in addr;
-	ZPlay * decoder;
-};
-
 struct ChannelInfo {
    string name;
    SOCKET sock;   
@@ -219,7 +212,7 @@ void process_stream_song (ClientContext * ctx, string song) {
 	}
 
 	// Create UDP socket
-	ctx->udp = create_udp_socket(0);
+	ctx->udp = ctx->udp ? ctx->udp : create_udp_socket(0);
 	ctx->addr.sin_port = htons(1338);
 
 	// decode song, send to client address
@@ -251,7 +244,7 @@ void process_stream_song (ClientContext * ctx, string song) {
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
-
+	cout << "Sending" << endl;
 	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
 		return 2;
 	
@@ -407,22 +400,63 @@ void process_join_channel(ClientContext * ctx, string channel) {
 
 void process_join_voice(ClientContext * ctx) {
 	cout << "voice" << endl;
-	if (ctx->decoder)
-		ctx->decoder->ReverseMode(1);
 
 	// Only allow one microphone user, like a sempahore.
-	if (s.microphone) {
-		s.microphone = false;
+	// if (s.microphone) {
+	// 	s.microphone = false;
+		
+		// Create zplay decoder instance, if it didn't already exist.
+		if (ctx->decoder == NULL)
+			ctx->decoder = CreateZPlay();
+		else
+			ctx->decoder->Close();
+
 		// Open microphone input stream
-		// Open remote microphone playback stream
+		int result = ctx->decoder->OpenFile("wavein://", sfAutodetect);
+		if(result == 0) {
+			printf("Error: %s\n", ctx->decoder->GetError());
+		}
+
+		ctx->udp = create_udp_socket(1338);
+		ctx->addr.sin_port = htons(1338);
 		// set callback to stream to client (reuse stream_cb?)
+		ctx->decoder->SetCallbackFunc(stream_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), ctx);
+		ctx->decoder->Play();
+
+		// Open remote microphone playback stream
+		ZPlay * player = CreateZPlay();
+		player->SetSettings(sidSamplerate, 44100);// 44100 samples
+		player->SetSettings(sidChannelNumber, 2);// 2 channel
+		player->SetSettings(sidBitPerSample, 16);// 16 bit
+		player->SetSettings(sidBigEndian, 0); // little endian
+		int i;
+		player->OpenStream(1, 1, &i, 2, sfPCM);
+		player->Play();
+
+		bool continue_streaming = true;
 
 		// main loop:
-		// 	Recv from client
-		// 	push data to stream
-	}
+		while (continue_streaming) {
+			char buf[65507];
+			
+			sockaddr_in server = {0};
+			int size = sizeof(server);
+			// 	Recv from client
+			cout << "recving" << endl;
+			int r = recvfrom (ctx->udp, buf, 65507, 0, (sockaddr*)&server, &size);
+			cout << "recv" << endl;
 
-	s.microphone = true;
+			// 	push data to stream
+			player->PushDataToStream(buf, r);
+		}
+
+		// WSARecv();
+		// WSARecvFrom();
+		// while (continue_streaming)
+		// 	SLeepEx(INFINITE, TRUE);
+	//}
+
+	//s.microphone = true;
 }
 
 void add_files_to_songs (std::vector<string>& songs, const char * file) {

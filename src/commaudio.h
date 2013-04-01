@@ -21,6 +21,7 @@
 
 #include <Windowsx.h>
 #include "resource.h"
+#include "libzplay.h"
 
 // Services structure - contains information about available songs, channels, resources etc.
 struct Services {
@@ -28,6 +29,13 @@ struct Services {
 	std::vector<std::string> channels;  // "name ip:port"
 	bool microphone;                    // true if microphone is available
 	Services () : microphone(false) {};
+};
+
+struct ClientContext {
+	SOCKET control;
+	SOCKET udp;
+	sockaddr_in addr;
+	libZPlay::ZPlay * decoder;
 };
 
 // Common Networking
@@ -40,6 +48,7 @@ void send_ec (int sock, const char* buf, size_t len, int flags);
 int comm_connect (const char * host, int port = 1337);
 void request_services(SOCKET sock);
 std::string recv_services (int sd);
+ClientContext * start_microphone_stream();
 
 // Utilities
 void ParseServicesList(std::string list, Services& s);

@@ -253,6 +253,7 @@ void stop_and_reset_player() {
 //
 //  WM_COMMAND  - process the application menu
 //  WM_DESTROY  - post a quit message and return
+//  WM_COMMAND  - dispatch and process the appropiate action for the command (stream, download, upload, etc)
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -272,10 +273,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     create_gui ( hWnd );
     break;
 
-  case WM_CTLCOLORBTN:
-  {
-     return (LRESULT)hbrBkgnd;
-  }
+  case WM_CTLCOLORBTN: {
+    return (LRESULT)hbrBkgnd;
+    }
 
   case WM_COMMAND:
     wmId    = LOWORD(wParam);
@@ -332,7 +332,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PAUSESELECTEDSONG:
       case IDC_BTN_PAUSE:
-
         TStreamStatus status;
         netplay->GetStatus(&status);
         if (status.fPause) {
@@ -377,10 +376,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
+        // Reset player
+        stop_and_reset_player();
+        
         // Send voice chat request
         send_ec(sock, "V\n", 2, 0);
-        // recv thread?
+
         // start microphone stream
+        start_microphone_stream();
         break;
 
       case IDC_BTN_UPLOAD:
@@ -466,7 +469,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
   default:
     return DefWindowProc(hWnd, message, wParam, lParam);
-  }
+    }
+
   return 0;
 }
 

@@ -244,7 +244,6 @@ void process_stream_song (ClientContext * ctx, string song) {
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
-	cout << "Sending" << endl;
 	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
 		return 2;
 	
@@ -441,10 +440,9 @@ void process_join_voice(ClientContext * ctx) {
 			
 			sockaddr_in server = {0};
 			int size = sizeof(server);
+			
 			// 	Recv from client
-			cout << "recving" << endl;
 			int r = recvfrom (ctx->udp, buf, 65507, 0, (sockaddr*)&server, &size);
-			cout << "recv" << endl;
 
 			// 	push data to stream
 			player->PushDataToStream(buf, r);

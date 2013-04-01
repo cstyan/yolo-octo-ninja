@@ -214,9 +214,6 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 
 	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
 		return 2;
-	cout << "send" << endl;
-	
-	Sleep(10);
 
 	return 1;
 }

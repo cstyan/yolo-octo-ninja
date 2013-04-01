@@ -272,6 +272,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     create_gui ( hWnd );
     break;
 
+  case WM_CTLCOLORBTN:
+  {
+     return (LRESULT)hbrBkgnd;
+  }
+
   case WM_COMMAND:
     wmId    = LOWORD(wParam);
     wmEvent = HIWORD(wParam);
@@ -327,14 +332,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PAUSESELECTEDSONG:
       case IDC_BTN_PAUSE:
+
         TStreamStatus status;
         netplay->GetStatus(&status);
         if (status.fPause) {
-          if (netplay->Resume())
+          if (netplay->Resume()) {
             SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+            SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+          }
         } else {
-          if (netplay->Pause()) 
-              SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
+          if (netplay->Pause()) {
+            SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
+            SendMessage(progress, PBM_SETMARQUEE, 0, 0);
+            SendMessage(progress, WM_PAINT, 0, 0);
+          }
         }
         break;
 
@@ -375,7 +386,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // Start progress bar marquee
         SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
         SendMessage(progress, PBM_SETMARQUEE, 1, 0);
-        
+
         keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
         send_ec(sock, "stop-stream\n", 14, 0);
@@ -393,9 +404,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_STREAM_STOP:
       case ID_CHANNELS_STOPSTREAMING:
         // Stop progress bar marquee
-        SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
-        SendMessage(progress, PBM_SETMARQUEE, 0, 0);
-        keep_streaming_channel = false;
+        if (keep_streaming_channel) {
+          SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
+          SendMessage(progress, PBM_SETMARQUEE, 0, 0);
+          keep_streaming_channel = false;
+        }
        break;
 
       case ID_SETUP_SELECTSERVER:

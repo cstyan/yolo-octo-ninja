@@ -12,7 +12,7 @@ using namespace libZPlay;
 char server[256] = "localhost";
 
 HINSTANCE hInst;
-bool keep_streaming_channel = true;
+bool keep_streaming_channel = false;
 int song_sock   = 0;
 ZPlay * netplay = NULL;
 const string SERVICE_REQUEST_STRING = "list-services\n";

@@ -13,6 +13,12 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <commctrl.h>
+// Mingw doesn't have this, even in the latest w32api package
+#ifndef PBS_MARQUEE
+#define PBS_MARQUEE             0x08
+#define PBM_SETMARQUEE          (WM_USER+10)
+#endif
+
 #include <Windowsx.h>
 #include "resource.h"
 

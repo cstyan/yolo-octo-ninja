@@ -292,11 +292,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
+          // Start progress bar marquee
+          SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+
           // The stop-stream command isn't necessary here:
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
           stop_and_reset_player();
-          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
           // Play thread needs control channel socket and pointer to zplayer instance.
           int lbItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 
           if (lbItem != LB_ERR) {
@@ -312,8 +315,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_STOPSELECTEDSONG:
       case IDC_BTN_STOP:
-        SendMessage(progress, PBM_SETPOS, 0, 0);
+        // Stop progress bar marquee
+        SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
         SendMessage(progress, PBM_SETMARQUEE, 0, 0);
+
         send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
         netplay->Stop();
@@ -367,6 +372,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
+        // Start progress bar marquee
+        SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+        SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+        
         keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
         send_ec(sock, "stop-stream\n", 14, 0);
@@ -383,6 +392,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case IDC_BTN_STREAM_STOP:
       case ID_CHANNELS_STOPSTREAMING:
+        // Stop progress bar marquee
+        SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
+        SendMessage(progress, PBM_SETMARQUEE, 0, 0);
         keep_streaming_channel = false;
        break;
 

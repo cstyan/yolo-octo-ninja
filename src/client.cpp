@@ -207,6 +207,49 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 	return 0;
 }
 
+
+int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
+	ClientContext * ctx = (ClientContext *) user_data;
+	sockaddr_in * client_addr = &ctx->addr;
+
+	if (sendto(ctx->udp, (const char *)param1, param2, 0, (const sockaddr*)client_addr, sizeof(sockaddr_in)) < 0)
+		return 2;
+	cout << "send" << endl;
+	
+	Sleep(10);
+
+	return 1;
+}
+
+ClientContext * start_microphone_stream() {
+	hostent	*hp;
+	ClientContext * ctx = new ClientContext;
+	memset(ctx, 0, sizeof(ClientContext));
+	ctx->decoder = CreateZPlay();
+
+	// Open microphone input stream
+	int result = ctx->decoder->OpenFile("wavein://", sfAutodetect);
+	if(result == 0) {
+		printf("Error: %s\n", ctx->decoder->GetError());
+	}
+	ctx->udp = create_udp_socket(0);
+	ctx->addr.sin_family = AF_INET;
+	ctx->addr.sin_port = htons(1338);
+
+	if ((hp = gethostbyname(server)) == NULL)
+	{
+		MessageBox(0, "Unknown server address", "Error Connecting.", 0);
+		return 0;
+	}
+
+	// Copy the server address
+	memcpy((char *)&ctx->addr.sin_addr, hp->h_addr, hp->h_length);
+	// set callback to stream to client (reuse stream_cb?)
+	ctx->decoder->SetCallbackFunc(stream_cb, (TCallbackMessage)(MsgWaveBuffer|MsgStop), ctx);
+	ctx->decoder->Play();
+	return ctx;
+}
+
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;
 	HWND hwnd;

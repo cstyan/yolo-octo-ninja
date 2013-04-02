@@ -3,7 +3,23 @@
 --
 --	PROGRAM:	server.exe
 --
---	FUNCTIONS:	
+--	FUNCTIONS:	int setup_listening (int port = 1337);
+--				void wait_for_connections (int lsock);
+--				string recv_request(SOCKET);
+--				DWORD WINAPI handle_client(LPVOID);
+--				void process_stream_song(ClientContext*, string);
+--				void process_download_file(ClientContext * ctx, string song);
+--				void process_upload_song(ClientContext * ctx, string song);
+--				void process_join_channel(ClientContext * ctx, string channel);
+--				void process_join_voice(ClientContext * ctx);
+--				int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, 
+--						unsigned int param1, unsigned int param2);
+--				void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
+--				bool validate_param(string param, SOCKET error_sock, string error_msg);
+--				void add_files_to_songs (std::vector<string>& songs, const char * file);
+--				void find_songs (std::vector<string>& songs);
+--				vector<string> retrieve_song_list(const char *playlistName);
+--				ChannelInfo extract_channel_info(const string& channelString);
 --
 --	DATE:		Mar 23, 2013
 --
@@ -12,7 +28,6 @@
 --
 --	NOTES:		Contains Main and the main functions for server program.
 ------------------------------------------------------------------------------------------------*/
-
 
 #include <direct.h>
 #include <iostream>

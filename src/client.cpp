@@ -48,6 +48,20 @@ struct ChannelInfo {
    sockaddr_in addr;
 };
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 int comm_connect (const char * host, int port) {
 	hostent	*hp;
 	sockaddr_in server;
@@ -77,10 +91,38 @@ int comm_connect (const char * host, int port) {
 	return sd;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void request_services(SOCKET sock) {   
    send_ec(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 string recv_services (int sd) {
 	string out;
 	char data[BUFSIZE];
@@ -100,6 +142,20 @@ string recv_services (int sd) {
 	return out;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void stream_song () {
 	// Close stream
 	netplay->Close();
@@ -143,11 +199,39 @@ void stream_song () {
 	closesocket(song_sock);
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	stream_song();
 	return 0;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 ChannelInfo extractChannelInfo(const string& channel) {
 	ChannelInfo ci;
 
@@ -159,6 +243,20 @@ ChannelInfo extractChannelInfo(const string& channel) {
 	return ci;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 DWORD WINAPI join_channel(LPVOID lpParamter) {
 	int error;
 	bool reuseFlag = false;
@@ -233,6 +331,19 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 }
 
 
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
@@ -243,6 +354,20 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 	return 1;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 ClientContext * start_microphone_stream() {
 	hostent	*hp;
 	ClientContext * ctx = new ClientContext;
@@ -272,6 +397,20 @@ ClientContext * start_microphone_stream() {
 	return ctx;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:		
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:		
+-- RETURNS:		
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;
 	HWND hwnd;

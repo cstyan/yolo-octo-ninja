@@ -6,7 +6,7 @@
 --	DATE:		11/Mar/2013
 --
 --	DESIGNERS:	
---	PROGRAMMERS: 
+--	PROGRAMMERS: Kevin Tangeman
 --
 --	NOTES:		This file contains declarations and definitions for client-file.cpp.
 ------------------------------------------------------------------------------------------------*/

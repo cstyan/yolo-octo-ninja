@@ -60,20 +60,76 @@ char displayServer[1024];
 char displayCurrent[1024];
 char temp_name[1024];
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   set_progress_bar
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  void set_progress_bar (int value)
+-- RETURNS:    void
+--
+-- NOTES: 	
+----------------------------------------------------------------------------------------------*/
 void set_progress_bar (int value) {
   SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
   SendMessage(progress, PBM_SETPOS, value, 0);
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   set_progress_bar_range
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  void set_progress_bar_range (size_t total_size)
+-- RETURNS:    void
+--
+-- NOTES: 	
+----------------------------------------------------------------------------------------------*/
 void set_progress_bar_range (size_t total_size) {
   SendMessage(progress, PBM_SETRANGE32, 0, total_size);
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   increment_progress_bar
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  void increment_progress_bar (size_t amount)
+-- RETURNS:    void
+--
+-- NOTES: 	
+----------------------------------------------------------------------------------------------*/
 void increment_progress_bar (size_t amount) {
   SendMessage(progress, PBM_DELTAPOS, amount, 0);
 }
 
-// Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   send_ec
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  int send_ec (int s, const char* buf, size_t len, int flags)
+-- RETURNS:    int
+--
+-- NOTES: 	Wrapper for sending with error checking and reporting 
+--				(shows a messagebox if call failed).
+----------------------------------------------------------------------------------------------*/
 int send_ec (int s, const char* buf, size_t len, int flags) {
   int ret;
   if ( (ret = send(s, buf, len, flags)) < 1) {
@@ -83,6 +139,20 @@ int send_ec (int s, const char* buf, size_t len, int flags) {
   return ret;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   check_connected
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  bool check_connected ()
+-- RETURNS:    bool
+--
+-- NOTES: 	
+----------------------------------------------------------------------------------------------*/
 bool check_connected () {
   if (sock == 0)
     MessageBox(0, "Not connected.", "Error", 0);
@@ -90,23 +160,22 @@ bool check_connected () {
   return sock != 0;
 }
 
-/*------------------------------------------------------------------------------------------
-  -- FUNCTION:   create_gui
-  --
-  -- DATE:       Mar 23, 2013
-  --
-  -- DESIGNER:   David Czech
-  -- PROGRAMMER: David Czech
-  --			Kevin Tangeman - Created client GUI layout
-  --
-  -- INTERFACE:  void create_gui (HWND hWnd)
-  -- RETURNS:    void
-  --
-  -- NOTES: Populate the parent hWnd with the GUI for the client (listboxes, buttons, etc).
-  ------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------
+-- FUNCTION:	create_gui
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:	David Czech
+-- PROGRAMMERS:	David Czech, Kevin Tangeman
+--
+-- INTERFACE:	void create_gui (HWND hWnd)
+-- RETURNS:		void
+--
+-- NOTES:		Populate the parent hWnd with the GUI for the client (listboxes, buttons, etc).
+------------------------------------------------------------------------------------------------*/
 void create_gui (HWND hWnd) {
   HFONT hFont;
-  //HWND heInput;
+
   // Create Input and Output Edit Text controls.
   hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
@@ -229,21 +298,19 @@ void create_gui (HWND hWnd) {
                        NULL);*/
 }
 
-/*------------------------------------------------------------------------------------------------------------------
-  -- FUNCTION:   get_and_display_services
-  --
-  -- DATE:       Mar 23, 2013
-  --
-  -- DESIGNER:   David Czech
-  --
-  -- PROGRAMMER: David Czech
-  --
-  -- INTERFACE:  void get_and_display_services(int control)
-  --
-  -- RETURNS:    nothing
-  --
-  -- NOTES: Request services from server, recieve its reply and populate the listboxes in the GUI with the data.
-  --------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------
+-- FUNCTION:   get_and_display_services
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void get_and_display_services(int control)
+-- RETURNS:    nothing
+--
+-- NOTES: Request services from server, recieve its reply and populate the listboxes in the GUI with the data.
+-------------------------------------------------------------------------------------------------------------*/
 void get_and_display_services(int control) {
   // Clear List boxes.
   SendMessage(slb, LB_RESETCONTENT, 0, 0);
@@ -268,21 +335,20 @@ void get_and_display_services(int control) {
   }
 }
 
-/*------------------------------------------------------------------------------------------------------------------
-  -- FUNCTION:   stop_and_reset_player
-  --
-  -- DATE:       Mar 27, 2013
-  --
-  -- DESIGNER:   David Czech
-  --
-  -- PROGRAMMER: David Czech
-  --
-  -- INTERFACE:  void stop_and_reset_player()
-  --
-  -- RETURNS:    nothing
-  --
-  -- NOTES: Resets Client ZPlay instance (clears all current data in stream) and re-opens a new dynamic stream.
-  ----------------------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------
+-- FUNCTION:   stop_and_reset_player
+--
+-- DATE:       Mar 27, 2013
+--
+-- DESIGNER:   David Czech
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void stop_and_reset_player()
+-- RETURNS:    nothing
+--
+-- NOTES:		Resets Client ZPlay instance (clears all current data in stream) and re-opens a new dynamic 
+--				stream.
+------------------------------------------------------------------------------------------------------------*/
 void stop_and_reset_player() {
   // Close current stream
   netplay->Close();
@@ -302,6 +368,20 @@ void stop_and_reset_player() {
   netplay->Play();
 }
 
+
+/*--------------------------------------------------------------------------------------------------
+-- FUNCTION:   fft_draw_loop
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   
+-- PROGRAMMERS: 
+--
+-- INTERFACE:  DWORD WINAPI fft_draw_loop (LPVOID lpParamter)
+-- RETURNS:    DWORD
+--
+-- NOTES: 	
+----------------------------------------------------------------------------------------------------*/
 DWORD WINAPI fft_draw_loop (LPVOID lpParamter) {
   while (true) {
     Sleep(20);
@@ -311,16 +391,19 @@ DWORD WINAPI fft_draw_loop (LPVOID lpParamter) {
 }
 
 
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_DESTROY  - post a quit message and return
-//  WM_COMMAND  - dispatch and process the appropiate action for the command (stream, download, upload, etc)
-//
-//
+/*--------------------------------------------------------------------------------------------------
+-- FUNCTION:   WndProc
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   David Czech, Kevin Tangeman
+-- PROGRAMMERS: David Czech, Kevin Tangeman
+--
+-- INTERFACE:	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+-- RETURNS:		LRESULT
+--
+-- NOTES:		Processes messages for the main window.
+----------------------------------------------------------------------------------------------------*/
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   int wmId, wmEvent, countItem, indexItem = -1;
@@ -604,16 +687,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
   return 0;
 }
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	InitInstance
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech, Kevin Tangeman
+--
+-- INTERFACE:	BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
+-- RETURNS:		BOOL
+--
+-- NOTES: 		Saves instance handle and creates main window.
+--				In this function, we save the instance handle in a global variable and
+--				create and display the main program window.
+------------------------------------------------------------------------------------------------*/
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
 {
    HWND hWnd;
@@ -634,19 +723,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
    return TRUE;
 }
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-//  COMMENTS:
-//
-//    This function and its usage are only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-//    function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
-//
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:   MyRegisterClass
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
+--
+-- INTERFACE:  ATOM MyRegisterClass(HINSTANCE hInstance)
+-- RETURNS:    
+--
+-- NOTES: 		Registers the window class. 
+--				This function and its usage are only necessary if you want this code
+--				to be compatible with Win32 systems prior to the 'RegisterClassEx'
+--				function that was added to Windows 95. It is important to call this function
+--				so that the application will get 'well formed' small icons associated with it.
+------------------------------------------------------------------------------------------------*/
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
   WNDCLASSEX wcex;
@@ -668,7 +762,20 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
   return RegisterClassEx(&wcex);
 }
 
-// Message handler for about box.
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	About
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
+--
+-- INTERFACE:	INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+-- RETURNS:		INT_PTR
+--
+-- NOTES: 		Message handler for about box.
+------------------------------------------------------------------------------------------------*/
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
   UNREFERENCED_PARAMETER(lParam);
@@ -699,17 +806,17 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 /*--------------------------------------------------------------------------------------------------
-  -- FUNCTION:   ServerSetup Dialog Box Message Handler
-  -- DATE:       Mar 29, 2013
-  --
-  -- DESIGNER:   Kevin Tangeman
-  -- PROGRAMMER: Kevin Tangeman
-  --
-  -- INTERFACE:  INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-  -- RETURNS:    INT_PTR
-  --
-  -- NOTES: Handles the messages for the Server Setup Dialog Box
-  --------------------------------------------------------------------------------------------------*/
+-- FUNCTION:	ServerSetup
+-- DATE:		Mar 29, 2013
+--
+-- DESIGNER:	Kevin Tangeman
+-- PROGRAMMER:	Kevin Tangeman
+--
+-- INTERFACE:	INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+-- RETURNS:		INT_PTR
+--
+-- NOTES:		Handles the messages for the Server Setup Dialog Box
+----------------------------------------------------------------------------------------------------*/
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);

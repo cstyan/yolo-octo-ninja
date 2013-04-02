@@ -566,7 +566,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	// Join multicast group
 	struct ip_mreq stMreq;
 	memset((char *)&stMreq, 0, sizeof(ip_mreq));
-	stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+	stMreq.imr_multiaddr.s_addr = ci.addr.sin_addr.s_addr;
 	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {

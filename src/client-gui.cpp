@@ -32,8 +32,10 @@ void get_and_display_services(int control);
 
 // if sock == 0, it means we're not connected.
 int sock = 0;
-HWND g_Hwnd, slb, clb, progress;
+HWND g_Hwnd, slb, clb, progress, hStatus;
 extern HINSTANCE hInst;  // current instance from main.cpp
+char displayServer[256];
+char displayCurrent[256];
 
 // Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
 void send_ec (int s, const char* buf, size_t len, int flags) {
@@ -100,13 +102,13 @@ void create_gui (HWND hWnd) {
   SendMessage (             // Stop button for play control
     CreateWindow("BUTTON", "Stop",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      155, 275, 40, 30, hWnd, (HMENU)IDC_BTN_STOP, NULL, NULL)
+      150, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STOP, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Pause button for play control
     CreateWindow("BUTTON", "Pause",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      315, 275, 40, 30, hWnd, (HMENU)IDC_BTN_PAUSE, NULL, NULL)
+      310, 275, 50, 30, hWnd, (HMENU)IDC_BTN_PAUSE, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (             // Next button for play control
@@ -168,7 +170,18 @@ void create_gui (HWND hWnd) {
     WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
     600, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STREAM_STOP, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
-  
+
+  SendMessage (		// create status bar at bottom of window
+  hStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL,
+	WS_CHILD|WS_VISIBLE, 0, 0, 0, 0,
+    hWnd, (HMENU)IDC_MAIN_STATUS, GetModuleHandle(NULL), NULL)
+	,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  // make 2 sections in status bar, left for "Currently playing: ... (song or channel)", 
+		// right for "Server: ..."
+  int statwidths[] = {465, -1};
+  SendMessage(hStatus, SB_SETPARTS, sizeof(statwidths)/sizeof(int), (LPARAM)statwidths);
+
   // Show server hostname dialog box.
   DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
 }
@@ -297,10 +310,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
-          // Start progress bar marquee
-          SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
-          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
-
           // The stop-stream command isn't necessary here:
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
@@ -314,6 +323,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Build and send request line
             string request = "S " + string(song_name) + "\n";
             send_ec(sock, request.data(), request.size(), 0);
+
+			strcpy_s(displayCurrent, "Currently playing: ");
+			strcat_s(displayCurrent, song_name);	// display current song in status bar
+			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+
+			// Start progress bar marquee
+			SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+			SendMessage(progress, PBM_SETMARQUEE, 1, 0);
           }
           break;
          }
@@ -327,7 +344,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         send_ec(sock, "stop-stream\n", 14, 0);
         stop_and_reset_player();
         netplay->Stop();
-        SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+        SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause"); // change button text
+		strcpy_s(displayCurrent, "");
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // clear status bar text
         break;
 
       case ID_SONGS_PAUSESELECTEDSONG:
@@ -388,10 +407,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         // start microphone stream
         start_microphone_stream();
+
+		strcpy_s(displayCurrent, "Currently playing: ");
+		strcat_s(displayCurrent, "Live Chat");	// display "Currently playing: Live Chat" in status bar
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
         break;
 
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
+		// display "Uploading song to server" in status bar
+		strcpy_s(displayCurrent, "Uploading song to server");
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+
         uploadFile(1337);
         break;
 
@@ -401,7 +428,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (lbItem != LB_ERR) {
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
-          downloadFile(1337, song_name);
+
+		  // display "Downloading song: <song_name>" in status bar
+		  strcpy_s(displayCurrent, "Downloading song: ");
+		  strcat_s(displayCurrent, song_name);	
+		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+
+          downloadFile(1337, song_name);	// call download() with song_name
         }
         break;
       }
@@ -420,8 +453,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
           char* channel = new char[BUFSIZE];
-          SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
+          //SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
+		  SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
           CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+
+		  // display "Currently playing: <channel name>" in status bar
+		  strcpy_s(displayCurrent, "Currently playing: ");
+		  strcat_s(displayCurrent, channel);	
+		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
         }
         break;
       }
@@ -433,6 +472,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
           SendMessage(progress, PBM_SETMARQUEE, 0, 0);
           keep_streaming_channel = false;
+
+		  // display "Currently playing: " in status bar
+		  strcpy_s(displayCurrent, "Currently playing: ");
+		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
         }
        break;
 
@@ -495,7 +538,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
    hInst = hInstance; // Store instance handle in our global variable
 
    g_Hwnd = hWnd = CreateWindow("DCA3", "DJK Player", (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX),
-      CW_USEDEFAULT, 0, 700, 395, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, 0, 700, 420, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -600,10 +643,13 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				case IDOK:		// get server name here
 				{
 					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
-					sock = comm_connect(server);
+					sock = comm_connect(server);		// create new server connection
 					if (sock) {
-						get_and_display_services(sock);
-						EndDialog(hDlg, LOWORD(wParam));
+						get_and_display_services(sock);	// display services from new server
+						EndDialog(hDlg, LOWORD(wParam));	// close dialog box
+						strcpy_s(displayServer, "Connected to: ");
+						strcat_s(displayServer, server);	// display server connected to in status bar
+						SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM)displayServer);
 					}
 					return (INT_PTR)TRUE;
 				}

@@ -54,7 +54,13 @@ bool downloadFile(int s, std::string filename)
 		t.tempData = DataDownload;
 		CreateThread(NULL, 0, DownloadThread, (LPVOID)&t, 0, NULL);
 	}
-	return false;		
+	else	// display "Error downloading song: <filename>" in status bar and return false
+	{
+		strcpy_s(displayCurrent, "ERROR downloading song: ");
+		strcat_s(displayCurrent, filename.c_str());	
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+		return false;
+	}
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -93,7 +99,7 @@ void uploadFile(int s)
 --
 -- PROGRAMMER:  Jacob Miner
 --
--- INTERFACE: bool SelectFile(uData* Download)
+-- INTERFACE: bool SaveFile(uData* Download)
 --
 -- RETURNS: true if a file is selected, false otherwise
 --
@@ -140,8 +146,18 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter)
 {
 	tempor* tt = (tempor*) lpParameter;
 	std::string filename = tt->file;
-	if (Download(&tt->tempData, filename))
+	if (Download(&tt->tempData, filename)){
+		// display "Downloading song: <filename> - COMPLETE" in status bar
+		strcpy_s(displayCurrent, "Downloading song: ");
+		strcat_s(displayCurrent, filename.c_str());	
+		strcat_s(displayCurrent, " - COMPLETE");	
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 		return true;
+	}
+	// display "ERROR downloading song: <filename>" in status bar
+	strcpy_s(displayCurrent, "ERROR downloading song: ");
+	strcat_s(displayCurrent, filename.c_str());	
+	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 	return false;
 }
 
@@ -310,6 +326,11 @@ bool SelectFile(uData* upload)
     {
         return false;
     }
+
+	// display "Uploading song: <filename>" in status bar
+	strcpy_s(displayCurrent, "Uploading song: ");
+	strcat_s(displayCurrent, filename);
+	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 	return true;
 }
 
@@ -430,6 +451,12 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 
 	fclose(fp);
 	closesocket (sd);
+
+	// display "Uploading song: <filename> - COMPLETE" in status bar
+	strcpy_s(displayCurrent, "Uploading song: ");
+	strcat_s(displayCurrent, filename);
+	strcat_s(displayCurrent, " - COMPLETE");
+	SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 
 	// After the socket is closed, the file is flushed.
 	get_and_display_services(sock);

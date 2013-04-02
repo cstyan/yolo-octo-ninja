@@ -23,6 +23,7 @@
 #define IDC_BTN_PAUSE                   208
 #define IDC_LIBZPLAY_VERSION            1000
 #define IDC_ADDR_HOSTNAME               1001
+#define IDC_MAIN_STATUS					1002
 #define BUFSIZE                         1024
 #define ID_SONGS_PLAYSELECTEDSONG       40002
 #define ID_SONGS_DOWNLOADSELECTEDSONG   40003

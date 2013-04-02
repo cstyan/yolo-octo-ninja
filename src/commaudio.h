@@ -38,6 +38,10 @@ struct ClientContext {
 	libZPlay::ZPlay * decoder;
 };
 
+extern HWND hStatus;
+extern char displayServer[256];
+extern char displayCurrent[256];
+
 // Common Networking
 SOCKET create_udp_socket (int port = 0);
 

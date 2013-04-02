@@ -49,11 +49,13 @@ void increment_progress_bar (size_t amount) {
 }
 
 // Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
-void send_ec (int s, const char* buf, size_t len, int flags) {
-  if (send(s, buf, len, flags) < 1) {
+int send_ec (int s, const char* buf, size_t len, int flags) {
+  int ret;
+  if ( (ret = send(s, buf, len, flags)) < 1) {
     MessageBox(0, "Disconnected.", "Error while sending to server", 0);
     sock = 0;
   }
+  return ret;
 }
 
 bool check_connected () {
@@ -148,14 +150,14 @@ void create_gui (HWND hWnd) {
 
   SendMessage (
   slb = CreateWindow("LISTBOX", "SongList", // Songs can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    50, 55, 410, 210, hWnd, (HMENU)-1, NULL, NULL)
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
+    50, 55, 410, 210, hWnd, (HMENU)ID_LS_SONGS, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   clb = CreateWindow("LISTBOX", "ChannelList",  // Channels can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    475, 55, 175, 210, hWnd, (HMENU)-1, NULL, NULL)
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
+    475, 55, 175, 210, hWnd, (HMENU)ID_LS_CHANNELS, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
@@ -307,13 +309,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
+      
+      // Fall through for Song Listbox double click.
+      case ID_LS_SONGS:
+        if (wmEvent != LBN_DBLCLK)
+          break;
 
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
-          // Start progress bar marquee
-          SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
-          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
-
           // The stop-stream command isn't necessary here:
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
@@ -326,7 +329,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cout << "Song selected " << song_name << endl;
             // Build and send request line
             string request = "S " + string(song_name) + "\n";
-            send_ec(sock, request.data(), request.size(), 0);
+            if (send_ec(sock, request.data(), request.size(), 0)) {
+              // Start progress bar marquee
+              SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+              SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+            }
           }
           break;
          }
@@ -419,6 +426,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
       }
       
+      // Fall through for channel list box events.
+      case ID_LS_CHANNELS:
+        if (wmEvent != LBN_DBLCLK)
+          break;
+
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
         // Start progress bar marquee

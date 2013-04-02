@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*---------------------------------------------------------------------------------------------
 --	SOURCE FILE: server.cpp
 --
@@ -28,6 +29,22 @@
 --
 --	NOTES:		Contains Main and the main functions for server program.
 ------------------------------------------------------------------------------------------------*/
+=======
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: server.cpp
+--
+--	PROGRAM:	server.exe
+--
+--	FUNCTIONS:	
+--
+--	DATE:		Mar 23, 2013
+--
+--	DESIGNERS:	
+--	PROGRAMMERS: 
+--
+--	NOTES:		Contains Main and the main functions for server program.
+------------------------------------------------------------------------------------------------*/
+>>>>>>> ba14e58958b6c3fbef82c3cbefd207ca9b2bc11f
 
 #include <direct.h>
 #include <iostream>
@@ -434,8 +451,8 @@ void process_join_voice(ClientContext * ctx) {
 	cout << "voice" << endl;
 
 	// Only allow one microphone user, like a sempahore.
-	// if (s.microphone) {
-	// 	s.microphone = false;
+	 if (s.microphone) {
+	 	s.microphone = false;
 		
 		// Create zplay decoder instance, if it didn't already exist.
 		if (ctx->decoder == NULL)
@@ -485,9 +502,9 @@ void process_join_voice(ClientContext * ctx) {
 		// WSARecvFrom();
 		// while (continue_streaming)
 		// 	SLeepEx(INFINITE, TRUE);
-	//}
+	}
 
-	//s.microphone = true;
+	s.microphone = true;
 }
 
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
@@ -544,7 +561,6 @@ ChannelInfo extract_channel_info(const string& channelString) {
 	ci.addr.sin_family = AF_INET;
 	ci.addr.sin_addr.s_addr = inet_addr(channelString.substr(lastSpace + 1, portSeperator - (lastSpace + 1)).c_str());
 	ci.addr.sin_port = htons(atoi(channelString.substr(portSeperator + 1, channelString.length() - (portSeperator + 1)).c_str()));
-
 	return ci;
 }
 
@@ -563,7 +579,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 			}
 		}
 	
-	return 1;
+	return 0;
 }
 
 DWORD WINAPI start_channel(LPVOID lpParameter) {
@@ -621,17 +637,17 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	out->SetSettings( sidWaveBufferSize, 100 );
 	//services_mutex.lock();
 	
-	vector<string> list = retrieve_song_list(channel->c_str());
+	vector<string> list = retrieve_song_list(ci.name.c_str());
 
 	for (size_t i = 0; i < list.size();)
 	{
 		cout << "Streaming song to channel: " << list[i] << endl;
 				
 		// Open song
-		if (out->OpenFile(s.songs[i].c_str(), out->GetFileFormat(list[i].c_str())) == 0) {
+		if (out->OpenFile(list[i].c_str(), out->GetFileFormat(list[i].c_str())) == 0) {
 			printf("Error: %s\n", out->GetError());
 			out->Release();
-			return 1;
+			//return 1;
 		}
 		// We're done with services for now, unlock while we play the song.
 		//services_mutex.unlock();

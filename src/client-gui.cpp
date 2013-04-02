@@ -412,6 +412,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
   RECT  rect;
   static HBRUSH hbrBkgnd;  // handle of background colour brush  
   static COLORREF crBkgnd; // color of main window background 
+  static HANDLE hChannelThread = 0;
 
   switch (message) {
 
@@ -443,7 +444,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
-      
+
+      case ID_FILE_VIEWFFT:
+        ShowWindow(hFFTwin, SW_SHOW);
+        break;
+
       // Fall through for Song Listbox double click.
       case ID_LS_SONGS:
         if (wmEvent != LBN_DBLCLK)
@@ -605,7 +610,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
         
-
+		keep_streaming_channel = false;
+		if (hChannelThread)
+			WaitForSingleObject(hChannelThread, 3000);
         keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
         send_ec(sock, "stop-stream\n", 14, 0);
@@ -616,7 +623,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           char* channel = new char[BUFSIZE];
           //SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
 		  SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
-          CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+          hChannelThread = CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
 
 		  // Start progress bar marquee
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);

@@ -41,7 +41,7 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "Select &Server",              ID_SETUP_SELECTSERVER
-        MENUITEM "&View FFT",                   ID_Menu
+        MENUITEM "&View FFT",                   ID_FILE_VIEWFFT
         MENUITEM "&Refresh Services",           ID_FILE_REFRESHSERVICES
         MENUITEM SEPARATOR
         MENUITEM "&Exit",                       IDM_EXIT

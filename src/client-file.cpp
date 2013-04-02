@@ -1,8 +1,26 @@
-/*
-	This file contains the functions for uploading a file to the server,
-	and downloading a file from the server. Only uploadFile and DownloadFile
-	should be called anywhere outside this file. Thanks.
-*/
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: client-file.cpp
+--
+--	PROGRAM:	client.exe
+--
+--	FUNCTIONS:	bool downloadFile(int s, std::string filename)
+--				void uploadFile(int s)
+--				bool SaveFile(uData* Download)
+--				DWORD WINAPI DownloadThread(LPVOID lpParameter)
+--				bool Download(uData* Download, std::string filename)
+--				bool SelectFile(uData* upload)
+--				DWORD WINAPI UploadThread(LPVOID lpParameter)
+--					
+--	DATE:		27/Feb/2013
+--
+--	DESIGNERS:	Jacob Miner
+--	PROGRAMMERS: Jacob Miner, Kevin Tangeman
+--
+--	NOTES:		This file contains the functions for uploading a file to the server,
+--				and downloading a file from the server. Only uploadFile and DownloadFile
+--				should be called anywhere outside this file. Thanks.
+------------------------------------------------------------------------------------------------*/
+
 #include "commaudio.h"
 #include "client-file.h"
 
@@ -27,16 +45,13 @@ using namespace std;
 -- DATE: Mar 18, 2013
 --
 -- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: bool DownloadFile(int s, string filename)
---
 -- RETURNS: true if the file is successfully downloaded, false otherwise..
 --
--- NOTES:
--- Begins the process of downloading a file to the server. 
--- If a filename is successfully given, the function to actually download the file is called.
+-- NOTES:	Begins the process of downloading a file to the server. 
+--			If a filename is successfully given, the function to actually download the file is called.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool downloadFile(int s, std::string filename)
 {
@@ -69,16 +84,13 @@ bool downloadFile(int s, std::string filename)
 -- DATE: Feb 27, 2013
 --
 -- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner
 --
 -- INTERFACE: void uploadFile(int s)
---
 -- RETURNS: void.
 --
--- NOTES:
--- Begins the process of sending a file to the server. 
--- If a file is successfully opened, a thread is spawned to send the file
+-- NOTES:	Begins the process of sending a file to the server. 
+--			If a file is successfully opened, a thread is spawned to send the file
 ----------------------------------------------------------------------------------------------------------------------*/
 void uploadFile(int s)
 {
@@ -96,15 +108,12 @@ void uploadFile(int s)
 -- DATE: Feb 27, 2013
 --
 -- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner
 --
 -- INTERFACE: bool SaveFile(uData* Download)
---
 -- RETURNS: true if a file is selected, false otherwise
 --
--- NOTES:
--- Save a file using a dialog box.
+-- NOTES:	Save a file using a dialog box.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool SaveFile(uData* Download)
 {
@@ -132,15 +141,12 @@ bool SaveFile(uData* Download)
 -- DATE: Mar 26, 2013
 --
 -- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: DWORD WINAPI DownloadThread(LPVOID lpParameter)
---
 -- RETURNS: DWORD.
 --
--- NOTES:
--- The thread that begins the downloading process.
+-- NOTES:	The thread that begins the downloading process.
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI DownloadThread(LPVOID lpParameter)
 {
@@ -166,16 +172,13 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- DESIGNERS:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner
 --
 -- INTERFACE: bool DownloadThread(uData* Download, std::string filename)
---
 -- RETURNS: true if function succeeded, false otherwise.
 --
--- NOTES:
--- The function that copies the data sent from the server into a file.
+-- NOTES:	The function that copies the data sent from the server into a file.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool Download(uData* Download, std::string filename)
 {
@@ -296,16 +299,13 @@ bool Download(uData* Download, std::string filename)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- DESIGNERS:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: bool SelectFile(uData* upload)
---
 -- RETURNS: true if a file is selected, false otherwise.
 --
--- NOTES:
--- Opens a file using a dialog box.
+-- NOTES:	Opens a file using a dialog box.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool SelectFile(uData* upload)
 {
@@ -339,16 +339,13 @@ bool SelectFile(uData* upload)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNER:  Jacob Miner
---
--- PROGRAMMER:  Jacob Miner
+-- DESIGNERS:  Jacob Miner
+-- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: DWORD WINAPI UploadThread(LPVOID lpParameter)
---
 -- RETURNS: DWORD.
 --
--- NOTES:
--- The thread that reads the file specified and sends it to the server using WSASend
+-- NOTES:	The thread that reads the file specified and sends it to the server using WSASend
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI UploadThread(LPVOID lpParameter)
 {

@@ -1,9 +1,31 @@
-// Assignment 3 Client GUI
-// client-gui.cpp : Defines the window GUI initialization and creation code.
-//
-//  PROGRAMMERS:
-//    23-Mar-2013 - Kevin Tangeman - Created basic client GUI interface layout in Win32
-//
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: client-gui.cpp
+--
+--	PROGRAM:	client.exe
+--
+--	FUNCTIONS:	void set_progress_bar_range (size_t total_size)
+--				void set_progress_bar (int value)
+--				void increment_progress_bar (size_t amount)
+--				int send_ec (int s, const char* buf, size_t len, int flags)
+--				bool check_connected ()
+--				void create_gui (HWND hWnd)
+--				void get_and_display_services(int control)
+--				void stop_and_reset_player()
+--				DWORD WINAPI fft_draw_loop (LPVOID lpParamter)
+--				LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+--				BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
+--				ATOM MyRegisterClass(HINSTANCE hInstance)
+--				INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+--				INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+--					
+--	DATE:		23/Mar/2013
+--
+--	DESIGNERS:	Kevin Tangeman, David Czech
+--	PROGRAMMERS: Kevin Tangeman, David Czech
+--
+--	NOTES:		Defines the window initialization and creation code for the client GUI.
+------------------------------------------------------------------------------------------------*/
+
 #define _WIN32_IE 0x301
 #include "CommAudio.h"
 #include "resource.h"
@@ -36,7 +58,6 @@ HWND g_Hwnd, slb, clb, progress, hStatus, hFFTwin = 0;;
 extern HINSTANCE hInst;  // current instance from main.cpp
 char displayServer[1024];
 char displayCurrent[1024];
-//char* temp_name = new char[BUFSIZE];
 char temp_name[1024];
 
 void set_progress_bar (int value) {
@@ -69,23 +90,20 @@ bool check_connected () {
   return sock != 0;
 }
 
-/*------------------------------------------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------------------
   -- FUNCTION:   create_gui
   --
   -- DATE:       Mar 23, 2013
   --
   -- DESIGNER:   David Czech
-  --
   -- PROGRAMMER: David Czech
-  --				Kevin Tangeman - Created basic client GUI interface layout
+  --			Kevin Tangeman - Created client GUI layout
   --
   -- INTERFACE:  void create_gui (HWND hWnd)
-  --    hwnd - the handle to the client parent window.
+  -- RETURNS:    void
   --
-  -- RETURNS:    nothing
-  --
-  -- NOTES: Populate the parent hwnd with the GUI for the client (listboxes, buttons, etc).
-  --------------------------------------------------------------------------------------------------------------------*/
+  -- NOTES: Populate the parent hWnd with the GUI for the client (listboxes, buttons, etc).
+  ------------------------------------------------------------------------------------------*/
 void create_gui (HWND hWnd) {
   HFONT hFont;
   //HWND heInput;
@@ -683,7 +701,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-/*------------------------------------------------------------------------------------------------------------------
+/*--------------------------------------------------------------------------------------------------
   -- FUNCTION:   ServerSetup Dialog Box Message Handler
   -- DATE:       Mar 29, 2013
   --
@@ -694,7 +712,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
   -- RETURNS:    INT_PTR
   --
   -- NOTES: Handles the messages for the Server Setup Dialog Box
-  ----------------------------------------------------------------------------------------------------------------------*/
+  --------------------------------------------------------------------------------------------------*/
 INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);

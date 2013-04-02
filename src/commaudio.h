@@ -1,3 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: commaudio.h
+--
+--	PROGRAM:	client.exe, server.exe
+--					
+--	DATE:		11/Mar/2013
+--
+--	DESIGNERS:	
+--	PROGRAMMERS: 
+--
+--	NOTES:		This file contains declarations and definitions for client-file.cpp.
+------------------------------------------------------------------------------------------------*/
+
 #define _WIN32_WINNT 0x0502
 #ifdef _MSC_VER
 #pragma comment(lib, "Ws2_32.lib")

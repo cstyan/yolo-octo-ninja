@@ -1,3 +1,28 @@
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: client.cpp
+--
+--	PROGRAM:	client.exe
+--
+--	FUNCTIONS:	int comm_connect (const char * host, int port)
+--				void request_services(SOCKET sock)
+--				string recv_services (int sd)
+--				void stream_song ()
+--				DWORD WINAPI stream_song_proc(LPVOID lpParamter)
+--				ChannelInfo extractChannelInfo(const string& channel)
+--				DWORD WINAPI join_channel(LPVOID lpParamter)
+--				int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, 
+--						unsigned int param1, unsigned int param2)
+--				ClientContext * start_microphone_stream()
+--				int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+--						LPTSTR lpCmdLine, int nCmdShow)
+--					
+--	DATE:		11/Mar/2013
+--
+--	DESIGNERS:	
+--	PROGRAMMERS: 
+--
+--	NOTES:		Provides main comm functions for client.exe
+------------------------------------------------------------------------------------------------*/
 #include <tchar.h>
 #include <iostream>
 #include <cstdlib>

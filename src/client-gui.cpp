@@ -37,12 +37,27 @@ extern HINSTANCE hInst;  // current instance from main.cpp
 char displayServer[256];
 char displayCurrent[256];
 
+void set_progress_bar (int value) {
+  SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
+  SendMessage(progress, PBM_SETPOS, value, 0);
+}
+
+void set_progress_bar_range (size_t total_size) {
+  SendMessage(progress, PBM_SETRANGE32, 0, total_size);
+}
+
+void increment_progress_bar (size_t amount) {
+  SendMessage(progress, PBM_DELTAPOS, amount, 0);
+}
+
 // Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
-void send_ec (int s, const char* buf, size_t len, int flags) {
-  if (send(s, buf, len, flags) < 1) {
+int send_ec (int s, const char* buf, size_t len, int flags) {
+  int ret;
+  if ( (ret = send(s, buf, len, flags)) < 1) {
     MessageBox(0, "Disconnected.", "Error while sending to server", 0);
     sock = 0;
   }
+  return ret;
 }
 
 bool check_connected () {
@@ -137,14 +152,14 @@ void create_gui (HWND hWnd) {
 
   SendMessage (
   slb = CreateWindow("LISTBOX", "SongList", // Songs can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    50, 55, 410, 210, hWnd, (HMENU)-1, NULL, NULL)
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
+    50, 55, 410, 210, hWnd, (HMENU)ID_LS_SONGS, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
   clb = CreateWindow("LISTBOX", "ChannelList",  // Channels can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL, 
-    475, 55, 175, 210, hWnd, (HMENU)-1, NULL, NULL)
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
+    475, 55, 175, 210, hWnd, (HMENU)ID_LS_CHANNELS, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
@@ -307,7 +322,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
-
+      
+      // Fall through for Song Listbox double click.
+      case ID_LS_SONGS:
+        if (wmEvent != LBN_DBLCLK)
+          break;
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
           // The stop-stream command isn't necessary here:
@@ -322,15 +341,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             cout << "Song selected " << song_name << endl;
             // Build and send request line
             string request = "S " + string(song_name) + "\n";
-            send_ec(sock, request.data(), request.size(), 0);
 
-			strcpy_s(displayCurrent, "Currently playing: ");
-			strcat_s(displayCurrent, song_name);	// display current song in status bar
-			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+            if (send_ec(sock, request.data(), request.size(), 0)) {
+              // Start progress bar marquee
+              SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+              SendMessage(progress, PBM_SETMARQUEE, 1, 0);
 
-			// Start progress bar marquee
-			SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
-			SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+			  // display "Currently playing: <song_name>" in status bar
+			  strcpy_s(displayCurrent, "Currently playing: ");
+			  strcat_s(displayCurrent, song_name);	
+			  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+            }
           }
           break;
          }
@@ -369,32 +390,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_PLAYPREV:
       case IDC_BTN_PREV:
-		indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0);	// gets current selectin index
-        
-		if (indexItem != LB_ERR) {
-		  indexItem -= 1;			// decrements it to get prev index
-		  
-		  if(indexItem >= 0){		// make sure current selection wasn't already first in list
-	  	    SendMessage(slb, LB_SETCURSEL, indexItem, 0);		// select prev song in list
-		    SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
-		  }
-		}
-		break;
+        indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0);	// gets current selectin index
+            
+        if (indexItem != LB_ERR) {
+          indexItem -= 1;			// decrements it to get prev index
+          
+          if(indexItem >= 0){		// make sure current selection wasn't already first in list
+            SendMessage(slb, LB_SETCURSEL, indexItem, 0);		// select prev song in list
+            SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
+          }
+        }
+        break;
 
       case ID_SONGS_PLAYNEXT:
       case IDC_BTN_NEXT:
-		indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 	// gets current selection index
-        
-		if (indexItem != LB_ERR) {
-		  indexItem += 1;			// increments it to get next index
-		  countItem = (int)SendMessage(slb, LB_GETCOUNT, 0, 0);	// get count of items in list
-		  
-		  // make sure current selection wasn't already last in list
-		  if((countItem != LB_ERR) && (indexItem < countItem)){
-		    SendMessage(slb, LB_SETCURSEL, indexItem, 0); 		// select prev song in list
-		    SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
-		  }
-		}
+        indexItem = (int)SendMessage(slb, LB_GETCURSEL, 0, 0); 	// gets current selection index
+
+        if (indexItem != LB_ERR) {
+          indexItem += 1;	   // increments it to get next index
+          countItem = (int)SendMessage(slb, LB_GETCOUNT, 0, 0);	// get count of items in list
+
+          // make sure current selection wasn't already last in list
+          if((countItem != LB_ERR) && (indexItem < countItem)) {
+            SendMessage(slb, LB_SETCURSEL, indexItem, 0); 		// select prev song in list
+            SendMessage(hWnd, WM_COMMAND, IDC_BTN_PLAY, 0);		// send 'play' message
+          }
+        }
         break;
 
       case IDC_BTN_CHAT:
@@ -439,6 +460,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
       }
       
+      // Fall through for channel list box events.
+      case ID_LS_CHANNELS:
+        if (wmEvent != LBN_DBLCLK)
+          break;
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
         // Start progress bar marquee

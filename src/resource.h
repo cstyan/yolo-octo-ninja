@@ -37,6 +37,8 @@
 #define ID_SETUP_SELECTSERVER           40017
 #define ID_FILE_REFRESHSERVICES         40018
 #define ID_CHANNELS_STOPSTREAMING       40019
+#define ID_LS_SONGS                     40020
+#define ID_LS_CHANNELS                  40021
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -44,7 +46,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102
-#define _APS_NEXT_COMMAND_VALUE         40020
+#define _APS_NEXT_COMMAND_VALUE         40022
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

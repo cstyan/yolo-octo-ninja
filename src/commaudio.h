@@ -48,7 +48,7 @@ SOCKET create_udp_socket (int port = 0);
 // Client Networking
 extern char server[256];
 extern int sock;
-void send_ec (int sock, const char* buf, size_t len, int flags);
+int send_ec (int sock, const char* buf, size_t len, int flags);
 int comm_connect (const char * host, int port = 1337);
 void request_services(SOCKET sock);
 std::string recv_services (int sd);
@@ -63,6 +63,10 @@ void get_and_display_services(int control);
 
 // GUI (these prototypes are valid for both client and server, but implemented differently!)
 void create_gui (HWND hWnd);
+void set_progress_bar(int value);
+void set_progress_bar_range (size_t total_size);
+void increment_progress_bar (size_t amount);
+
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd);
 ATOM MyRegisterClass(HINSTANCE hInstance);
 

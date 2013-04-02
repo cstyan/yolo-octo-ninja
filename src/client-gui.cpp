@@ -35,6 +35,19 @@ int sock = 0;
 HWND g_Hwnd, slb, clb, progress;
 extern HINSTANCE hInst;  // current instance from main.cpp
 
+void set_progress_bar (int value) {
+  SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
+  SendMessage(progress, PBM_SETPOS, value, 0);
+}
+
+void set_progress_bar_range (size_t total_size) {
+  SendMessage(progress, PBM_SETRANGE32, 0, total_size);
+}
+
+void increment_progress_bar (size_t amount) {
+  SendMessage(progress, PBM_DELTAPOS, amount, 0);
+}
+
 // Wrapper for sending with error checking and reporting (shows a messagebox if call failed).
 void send_ec (int s, const char* buf, size_t len, int flags) {
   if (send(s, buf, len, flags) < 1) {

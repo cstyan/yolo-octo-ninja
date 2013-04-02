@@ -59,6 +59,9 @@ void get_and_display_services(int control);
 
 // GUI (these prototypes are valid for both client and server, but implemented differently!)
 void create_gui (HWND hWnd);
+void set_progress_bar(int value);
+void set_progress_bar_range (size_t total_size);
+void increment_progress_bar (size_t amount);
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd);
 ATOM MyRegisterClass(HINSTANCE hInstance);
 

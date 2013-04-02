@@ -418,12 +418,20 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	if (reply_buffer != go_reply)
 		cout << "Didn't get the go-ahead!" << endl;
 
+	fseek(fp, 0, SEEK_END); // seek to end of file
+	size_t total_size = ftell(fp); // get current file pointer
+	fseek(fp, 0, SEEK_SET); // seek back to beginning of file
+
+	set_progress_bar(0);
+	set_progress_bar_range(total_size);
+
 	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
 	while ((ret = fread(sbuf, 1, BUFSIZE, fp)) > 0)
 	{
 		SI->DataBuf.len = ret;
-
+		increment_progress_bar(ret);
+		
 		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
 		memset(sbuf, 0, sizeof(sbuf));
 	}

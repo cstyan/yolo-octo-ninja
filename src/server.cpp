@@ -502,7 +502,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
 			return 2;
 	
-	Sleep(100);
+	//Sleep(100);
 	return 1;
 }
 

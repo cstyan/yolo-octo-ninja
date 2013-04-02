@@ -290,7 +290,7 @@ void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 	while (!stream.eof()) {
 		stream.read(buf, BUFSIZE);
 		if (send(sock, buf, stream.gcount(), 0) < 0) {
-			// TODO: error handling
+			printf("Error sending from stream.\n");
 		}
 		s += stream.gcount();
 	}
@@ -521,7 +521,7 @@ ChannelInfo extract_channel_info(const string& channelString) {
 	size_t portSeperator = channelString.find_last_of(":");
 
 	if (lastSpace == string::npos || portSeperator == string::npos) {
-		// TODO: error
+		printf("Invalid channel string format.");
 	}
 	
 	ci.name = channelString.substr(0, lastSpace);
@@ -565,7 +565,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
 
 	if (ci.sock == INVALID_SOCKET) {
-	  // TODO: error handling
+	  cout << "Error: Invalid socket" << endl;
+	  return false;
 	}
 
 	// Bind socket   
@@ -574,7 +575,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	localAddr.sin_port = 0;
 
 	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	  cout << "Error: Bind socket" << endl;
+	  return false;
 	}
 
 	// Join multicast group
@@ -584,17 +586,20 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	  cout << "Error: Invalid socket" << endl;
+	  return false;
 	}
 
 	// Set TTL
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	  cout << "Error: Setting TTL" << endl;
+	  return false;
 	}
 
 	// Disable loopback
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopback, sizeof(loopback))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	  cout << "Error: Disable loopback" << endl;
+	  return false;
 	}
 
 	// Start streaming

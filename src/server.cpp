@@ -36,6 +36,7 @@ bool validate_param(string param, SOCKET error_sock, string error_msg);
 void add_files_to_songs (std::vector<string>& songs, const char * file);
 void find_songs (std::vector<string>& songs);
 vector<string> retrieve_song_list(const char *playlistName);
+ChannelInfo extract_channel_info(const string& channelString);
 
 /*
 * setup_listening (int port = 1337)
@@ -485,13 +486,33 @@ void find_songs (std::vector<string>& songs) {
 	}
 }
 
-ChannelInfo extractChannelInfo(const string& channel) {
+void get_channels(vector<string>& channelList) {	
+	string channel;
+			
+	ifstream ifs("channels.lst");
+	
+	if (ifs) {
+		while (!ifs.eof()) {
+			getline(ifs, channel); 
+			channelList.push_back(channel);
+		}	
+	}
+}
+
+ChannelInfo extract_channel_info(const string& channelString) {
 	ChannelInfo ci;
 
-	ci.name = "The Peak"; // TODO: un-hardcode
+	size_t lastSpace = channelString.find_last_of(" ");
+	size_t portSeperator = channelString.find_last_of(":");
+
+	if (lastSpace == string::npos || portSeperator == string::npos) {
+		// TODO: error
+	}
+	
+	ci.name = channelString.substr(0, lastSpace);
 	ci.addr.sin_family = AF_INET;
-	ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
-	ci.addr.sin_port = htons(8910);
+	ci.addr.sin_addr.s_addr = inet_addr(channelString.substr(lastSpace + 1, portSeperator - (lastSpace + 1)).c_str());
+	ci.addr.sin_port = htons(atoi(channelString.substr(portSeperator + 1, channelString.length() - (portSeperator + 1)).c_str()));
 
 	return ci;
 }
@@ -524,7 +545,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	string *channel = (string*)lpParameter;
 
 	// Parse channel info
-	ChannelInfo ci = extractChannelInfo(*channel);   	
+	ChannelInfo ci = extract_channel_info(*channel);   	
 
 	// Create socket
 	ci.sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -569,12 +590,14 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	out->SetSettings( sidWaveBufferSize, 100 );
 	//services_mutex.lock();
 	
-	for (size_t i = 0; i < s.songs.size();)
-	{
-		cout << "Streaming song to channel: " << s.songs[i] << endl;
+	vector<string> list = retrieve_song_list(channel->c_str());
 
+	for (size_t i = 0; i < list.size();)
+	{
+		cout << "Streaming song to channel: " << list[i] << endl;
+				
 		// Open song
-		if (out->OpenFile(s.songs[i].c_str(), out->GetFileFormat(s.songs[i].c_str())) == 0) {
+		if (out->OpenFile(s.songs[i].c_str(), out->GetFileFormat(list[i].c_str())) == 0) {
 			printf("Error: %s\n", out->GetError());
 			out->Release();
 			return 1;
@@ -600,7 +623,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 
 		// Lock to check the size, gets unlocked at the beginning of the loop.
 		//services_mutex.lock();
-		if ((++i) == s.songs.size())
+		if ((++i) == list.size())
 			i = 0;
 	}
 	
@@ -612,7 +635,23 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 void start_all_channels() {
 	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
 		if (CreateThread(NULL, 0, start_channel, (LPVOID)&(*it), 0, NULL) == NULL)
-			cerr << "Couldn't create channel thread!" << endl;
+			cerr << "Couldn't create channel thread!" << endl;	
+}
+
+vector<string> retrieve_song_list(const char *playlistName) {
+	vector<string> list;
+	string song;
+			
+	ifstream ifs((string(playlistName) + ".lst").c_str());
+	
+	if (ifs) {
+		while (!ifs.eof()) {
+			getline(ifs, song); 
+			list.push_back(song);
+		}	
+	}
+
+	return list;
 }
 
 int main(int argc, char const *argv[])
@@ -635,7 +674,7 @@ int main(int argc, char const *argv[])
 
 	find_songs(s.songs);
 	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
-	s.channels.push_back("The Peak");
+	get_channels(s.channels);	
 	start_all_channels();
 
 	int sock = setup_listening();

@@ -39,8 +39,8 @@ struct ClientContext {
 };
 
 extern HWND hStatus;
-extern char displayServer[256];
-extern char displayCurrent[256];
+extern char displayServer[1024];
+extern char displayCurrent[1024];
 
 // Common Networking
 SOCKET create_udp_socket (int port = 0);

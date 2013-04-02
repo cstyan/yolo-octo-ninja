@@ -34,8 +34,9 @@ void get_and_display_services(int control);
 int sock = 0;
 HWND g_Hwnd, slb, clb, progress, hStatus;
 extern HINSTANCE hInst;  // current instance from main.cpp
-char displayServer[256];
-char displayCurrent[256];
+char displayServer[1024];
+char displayCurrent[1024];
+char* temp_name = new char[BUFSIZE];
 
 void set_progress_bar (int value) {
   SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
@@ -338,6 +339,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           if (lbItem != LB_ERR) {
             char* song_name = new char[BUFSIZE];
             SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
+			strcpy(temp_name, song_name);			// copy song_name to temp_name for "pause" function
             cout << "Song selected " << song_name << endl;
             // Build and send request line
             string request = "S " + string(song_name) + "\n";
@@ -378,12 +380,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           if (netplay->Resume()) {
             SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
             SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+
+			// display "Currently playing: <song_name>" in status bar
+			strcpy_s(displayCurrent, "Currently playing: ");
+			strcat_s(displayCurrent, temp_name);	
+			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
         } else {
           if (netplay->Pause()) {
             SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
             SendMessage(progress, PBM_SETMARQUEE, 0, 0);
             SendMessage(progress, WM_PAINT, 0, 0);
+
+			// display "Currently playing: <song_name>" in status bar
+			strcpy_s(displayCurrent, "Currently playing: ");
+			strcat_s(displayCurrent, temp_name);	
+			strcat_s(displayCurrent, " - PAUSED");
+			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
         }
         break;

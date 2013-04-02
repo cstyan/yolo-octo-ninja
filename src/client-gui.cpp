@@ -372,6 +372,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           break;
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
+		  keep_streaming_channel = false;
           // The stop-stream command isn't necessary here:
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
@@ -402,6 +403,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_STOPSELECTEDSONG:
       case IDC_BTN_STOP:
+		keep_streaming_channel = false;
+
         // Stop progress bar marquee
         SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
         SendMessage(progress, PBM_SETMARQUEE, 0, 0);
@@ -550,6 +553,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		  strcpy_s(displayCurrent, "Currently playing: ");
 		  strcat_s(displayCurrent, channel);	
 		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+		  SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
         }
         break;
       }

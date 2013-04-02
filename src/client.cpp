@@ -174,13 +174,14 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	//ChannelInfo ci = extractChannelInfo(*channel);         
 	ChannelInfo ci = extractChannelInfo((char*)lpParameter);         
 
-	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
-	  // TODO: error handling
+	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {	  
 		cout << "error socket" << endl;
+		return false;
 	}
 
-	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {		
+		cout << "error setsockopt" << endl;
+		return false;
 	}
 
 	localAddr.sin_family = AF_INET;
@@ -188,8 +189,8 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	localAddr.sin_port = ci.addr.sin_port;
 
 	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
-	  // TODO: error handling
-		cout << "error bind" << endl;
+	  cout << "error bind" << endl;
+		return false;
 	}
 
 	// Join multicast group
@@ -198,8 +199,8 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
-	  // TODO: error handling
 		cout << "error multicast" << endl;
+		return false;
 	}
 
 	netplay->Play();

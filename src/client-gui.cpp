@@ -273,6 +273,15 @@ void stop_and_reset_player() {
   // Start playing as soon as we get data.
   netplay->Play();
 }
+HWND hFFTwin = 0;
+DWORD WINAPI fft_draw_loop (LPVOID lpParamter) {
+  while (true) {
+    Sleep(10);
+    if (netplay && hFFTwin != 0)
+      netplay->DrawFFTGraphOnHWND(hFFTwin, 0, 0, 300, 200);
+  }
+}
+
 
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -299,6 +308,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     crBkgnd = RGB(102, 178, 255);       // set background colour for main window
     hbrBkgnd = CreateSolidBrush(crBkgnd);   // create background brush with background colour
     create_gui ( hWnd );
+    hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", WS_VISIBLE, 0, 0, 300, 225, 0, NULL, 0, 0);
+    CreateThread(NULL, 0, fft_draw_loop, (LPVOID)NULL, 0, NULL);
     break;
 
   case WM_CTLCOLORBTN: {
@@ -345,7 +356,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (send_ec(sock, request.data(), request.size(), 0)) {
               // Start progress bar marquee
               SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
-              SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+              SendMessage(progress, PBM_SETMARQUEE, 1, 1);
 
 			  // display "Currently playing: <song_name>" in status bar
 			  strcpy_s(displayCurrent, "Currently playing: ");

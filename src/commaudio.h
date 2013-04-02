@@ -17,6 +17,8 @@
 #ifndef PBS_MARQUEE
 #define PBS_MARQUEE             0x08
 #define PBM_SETMARQUEE          (WM_USER+10)
+#define strcpy_s strcpy
+#define strcat_s strcat
 #endif
 
 #include <Windowsx.h>

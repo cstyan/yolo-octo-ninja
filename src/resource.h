@@ -39,7 +39,7 @@
 #define ID_CHANNELS_STOPSTREAMING       40019
 #define ID_LS_SONGS                     40020
 #define ID_LS_CHANNELS                  40021
-#define ID_Menu                         40022
+#define ID_FILE_VIEWFFT                 40022
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

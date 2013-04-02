@@ -537,7 +537,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 	if (message == MsgWaveBuffer)
 		while (param2) {
 			size_t sb = min(1024, param2);
-			cout << "Sending " << sb << endl;
+			//cout << "Sending " << sb << endl;
 			if (sendto(ci->sock, (const char *)param1, sb, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0) {
 				return 2;
 			} else {
@@ -605,8 +605,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	// Start streaming
 	// Create zplay Instance
 	ZPlay *out = CreateZPlay();
-	cout << "Current buffer size: " << out->GetSettings( sidWaveBufferSize ) << endl;
-	out->SetSettings( sidWaveBufferSize, 100 );
+	//cout << "Current buffer size: " << out->GetSettings( sidWaveBufferSize ) << endl;
+	//out->SetSettings( sidWaveBufferSize, 100 );
 	//services_mutex.lock();
 	
 	vector<string> list = retrieve_song_list(ci.name.c_str());

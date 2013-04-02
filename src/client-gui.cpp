@@ -574,11 +574,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
        break;
 
       case ID_SETUP_SELECTSERVER:
-        if (sock != 0) {
-          send(sock, "stop-stream\n", 14, 0);
-          closesocket(sock);
-          sock = 0;
-        }
         DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
         break;
 
@@ -736,6 +731,11 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			{
 				case IDOK:		// get server name here
 				{
+					if (sock != 0) {
+						send(sock, "stop-stream\n", 14, 0);
+						closesocket(sock);
+						sock = 0;
+					}
 					GetDlgItemText(hDlg, IDC_ADDR_HOSTNAME, server, 256);  // get input from edit box
 					sock = comm_connect(server);		// create new server connection
 					if (sock) {

@@ -32,7 +32,7 @@ void get_and_display_services(int control);
 
 // if sock == 0, it means we're not connected.
 int sock = 0;
-HWND g_Hwnd, slb, clb, progress, hStatus;
+HWND g_Hwnd, slb, clb, progress, hStatus, hFFTwin = 0;;
 extern HINSTANCE hInst;  // current instance from main.cpp
 char displayServer[1024];
 char displayCurrent[1024];
@@ -199,6 +199,20 @@ void create_gui (HWND hWnd) {
 
   // Show server hostname dialog box.
   DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
+  hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", WS_VISIBLE, 0, 0, 300, 225, 0, NULL, 0, 0);
+  // Toolbar style window.
+  /*hFFTwin = CreateWindowEx(WS_EX_TOOLWINDOW, 
+                       (LPSTR)32770,
+                       "FFT Graph",
+                       WS_OVERLAPPEDWINDOW|WS_VISIBLE,
+                       CW_USEDEFAULT,
+                       CW_USEDEFAULT,
+                       315,
+                       233,
+                       NULL,
+                       NULL,
+                       hInst,
+                       NULL);*/
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -273,10 +287,10 @@ void stop_and_reset_player() {
   // Start playing as soon as we get data.
   netplay->Play();
 }
-HWND hFFTwin = 0;
+
 DWORD WINAPI fft_draw_loop (LPVOID lpParamter) {
   while (true) {
-    Sleep(10);
+    Sleep(20);
     if (netplay && hFFTwin != 0)
       netplay->DrawFFTGraphOnHWND(hFFTwin, 0, 0, 300, 200);
   }
@@ -308,7 +322,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     crBkgnd = RGB(102, 178, 255);       // set background colour for main window
     hbrBkgnd = CreateSolidBrush(crBkgnd);   // create background brush with background colour
     create_gui ( hWnd );
-    hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", WS_VISIBLE, 0, 0, 300, 225, 0, NULL, 0, 0);
     CreateThread(NULL, 0, fft_draw_loop, (LPVOID)NULL, 0, NULL);
     break;
 

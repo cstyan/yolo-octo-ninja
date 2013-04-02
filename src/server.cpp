@@ -35,6 +35,7 @@ void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetS
 bool validate_param(string param, SOCKET error_sock, string error_msg);
 void add_files_to_songs (std::vector<string>& songs, const char * file);
 void find_songs (std::vector<string>& songs);
+vector<string> retrieve_song_list(const char *playlistName);
 
 /*
 * setup_listening (int port = 1337)
@@ -497,12 +498,19 @@ ChannelInfo extractChannelInfo(const string& channel) {
 
 int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ChannelInfo *ci = (ChannelInfo*)user_data;
-
-	if (message == MsgWaveBuffer)
-		if (sendto(ci->sock, (const char *)param1, param2, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0)
-			return 2;
 	
-	//Sleep(100);
+	if (message == MsgWaveBuffer)
+		while (param2) {
+			size_t sb = min(1024, param2);
+			cout << "Sending " << sb << endl;
+			if (sendto(ci->sock, (const char *)param1, sb, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0) {
+				return 2;
+			} else {
+				param1 += sb; // move buffer
+				param2 -= sb; // reduce bytes remaining in buffer
+			}
+		}
+	
 	return 1;
 }
 
@@ -557,8 +565,10 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	// Start streaming
 	// Create zplay Instance
 	ZPlay *out = CreateZPlay();
-	
+	cout << "Current buffer size: " << out->GetSettings( sidWaveBufferSize ) << endl;
+	out->SetSettings( sidWaveBufferSize, 100 );
 	//services_mutex.lock();
+	
 	for (size_t i = 0; i < s.songs.size();)
 	{
 		cout << "Streaming song to channel: " << s.songs[i] << endl;

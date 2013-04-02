@@ -123,18 +123,23 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	return 0;
 }
 
-ChannelInfo extractChannelInfo(const string& channel) {
+ChannelInfo extractChannelInfo(const char *channel) {
 	ChannelInfo ci;
+	
+	string channelString(channel);
 
-	ci.name = "The Peak"; // TODO: un-hardcode
+	size_t lastSpace = channelString.find_last_of(" ");
+	size_t portSeperator = channelString.find_last_of(":");
+		
+	ci.name = channelString.substr(0, lastSpace);
 	ci.addr.sin_family = AF_INET;
-	ci.addr.sin_addr.s_addr = inet_addr("234.5.6.7");
-	ci.addr.sin_port = htons(8910);
+	ci.addr.sin_addr.s_addr = inet_addr(channelString.substr(lastSpace + 1, portSeperator - (lastSpace + 1)).c_str());
+	ci.addr.sin_port = htons(atoi(channelString.substr(portSeperator + 1, channelString.length() - (portSeperator + 1)).c_str()));
 
 	return ci;
 }
 
-DWORD WINAPI join_channel(LPVOID lpParamter) {
+DWORD WINAPI join_channel(LPVOID lpParameter) {
 	int error;
 	bool reuseFlag = false;
 	SOCKADDR_IN localAddr, sourceAddr;
@@ -142,7 +147,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	// Parse channel info
 	//ChannelInfo ci = extractChannelInfo(*channel);         
-	ChannelInfo ci = extractChannelInfo(string("fsdfsdF"));         
+	ChannelInfo ci = extractChannelInfo((char*)lpParameter);         
 
 	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
 	  // TODO: error handling
@@ -155,7 +160,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	localAddr.sin_family = AF_INET;
 	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	localAddr.sin_port = htons(8910);
+	localAddr.sin_port = ci.addr.sin_port;
 
 	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
 	  // TODO: error handling
@@ -164,7 +169,7 @@ DWORD WINAPI join_channel(LPVOID lpParamter) {
 
 	// Join multicast group
 	memset((char *)&stMreq, 0, sizeof(ip_mreq));
-	stMreq.imr_multiaddr.s_addr = inet_addr("234.5.6.7");//ci.addr.sin_addr.s_addr;
+	stMreq.imr_multiaddr.s_addr = ci.addr.sin_addr.s_addr;
 	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {

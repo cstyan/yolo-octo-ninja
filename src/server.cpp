@@ -590,14 +590,14 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	out->SetSettings( sidWaveBufferSize, 100 );
 	//services_mutex.lock();
 	
-	vector<string> list = retrieve_song_list(channel->c_str());
+	vector<string> list = retrieve_song_list(ci.name.c_str());
 
 	for (size_t i = 0; i < list.size();)
 	{
 		cout << "Streaming song to channel: " << list[i] << endl;
 				
 		// Open song
-		if (out->OpenFile(s.songs[i].c_str(), out->GetFileFormat(list[i].c_str())) == 0) {
+		if (out->OpenFile(list[i].c_str(), out->GetFileFormat(list[i].c_str())) == 0) {
 			printf("Error: %s\n", out->GetError());
 			out->Release();
 			return 1;

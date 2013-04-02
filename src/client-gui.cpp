@@ -361,7 +361,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDM_ABOUT:
         DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
         break;
-      
+
+      case ID_FILE_VIEWFFT:
+        ShowWindow(hFFTwin, SW_SHOW);
+        break;
+
       // Fall through for Song Listbox double click.
       case ID_LS_SONGS:
         if (wmEvent != LBN_DBLCLK)

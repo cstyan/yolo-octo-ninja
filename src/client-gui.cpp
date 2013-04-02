@@ -36,7 +36,8 @@ HWND g_Hwnd, slb, clb, progress, hStatus;
 extern HINSTANCE hInst;  // current instance from main.cpp
 char displayServer[1024];
 char displayCurrent[1024];
-char* temp_name = new char[BUFSIZE];
+//char* temp_name = new char[BUFSIZE];
+char temp_name[1024];
 
 void set_progress_bar (int value) {
   SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
@@ -97,82 +98,10 @@ void create_gui (HWND hWnd) {
   InitCtrlEx.dwICC  = ICC_PROGRESS_CLASS;
   InitCommonControlsEx(&InitCtrlEx);
 
-  SendMessage(
-    progress = CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",  // progress bar
-      WS_CHILD|WS_VISIBLE|PBS_SMOOTH|PBS_MARQUEE,
-      50, 315, 600, 20, hWnd, NULL, hInst, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Prev button for play control
-    CreateWindow("BUTTON", "Prev",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      95, 280, 40, 20, hWnd, (HMENU)IDC_BTN_PREV, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Play button for play control
-    CreateWindow("BUTTON", "Play",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      215, 275, 80, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Stop button for play control
-    CreateWindow("BUTTON", "Stop",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      150, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STOP, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Pause button for play control
-    CreateWindow("BUTTON", "Pause",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      310, 275, 50, 30, hWnd, (HMENU)IDC_BTN_PAUSE, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Next button for play control
-    CreateWindow("BUTTON", "Next",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      375, 280, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  /*SendMessage (             // Mic button for using microphone
-   CreateWindow("BUTTON", "Chat",
-     WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-     580, 260, 60, 30, hWnd, (HMENU)IDC_BTN_CHAT, NULL, NULL)
-   ,WM_SETFONT, (WPARAM)hFont, TRUE);*/
-
-  SendMessage (             // Download button for downloading files
-    CreateWindow("BUTTON", "Download",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      380, 10, 80, 20, hWnd, (HMENU)IDC_BTN_DOWNLOAD, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (             // Upload button for uploading files
-    CreateWindow("BUTTON", "Upload",
-      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON,
-      50, 10, 80, 20, hWnd, (HMENU)IDC_BTN_UPLOAD, NULL, NULL)
-    ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  slb = CreateWindow("LISTBOX", "SongList", // Songs can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
-    50, 55, 410, 210, hWnd, (HMENU)ID_LS_SONGS, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
   SendMessage (
   clb = CreateWindow("LISTBOX", "ChannelList",  // Channels can be listed and selected here
-    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY, 
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY|WS_TABSTOP, 
     475, 55, 175, 210, hWnd, (HMENU)ID_LS_CHANNELS, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindow("STATIC", "Song List",
-    WS_CHILD|WS_VISIBLE|SS_CENTER, 
-    50, 40, 410, 15, hWnd, (HMENU)-1, NULL, NULL)
-  ,WM_SETFONT, (WPARAM)hFont, TRUE);
-
-  SendMessage (
-  CreateWindow("STATIC", "Channel List",
-    WS_CHILD|WS_VISIBLE|SS_CENTER, 
-    475, 40, 175, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (
@@ -185,6 +114,76 @@ void create_gui (HWND hWnd) {
   CreateWindow("BUTTON", "Stop",
     WS_CHILD|WS_VISIBLE|WS_TABSTOP | WS_GROUP, 
     600, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STREAM_STOP, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+    slb = CreateWindow("LISTBOX", "SongList", // Songs can be listed and selected here
+    WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY|WS_TABSTOP, 
+    50, 55, 410, 210, hWnd, (HMENU)ID_LS_SONGS, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Play button for play control
+    CreateWindow("BUTTON", "Play",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      215, 275, 80, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+
+
+ 
+
+  SendMessage (             // Prev button for play control
+    CreateWindow("BUTTON", "Prev",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      95, 280, 40, 20, hWnd, (HMENU)IDC_BTN_PREV, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Stop button for play control
+    CreateWindow("BUTTON", "Stop",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      150, 275, 50, 30, hWnd, (HMENU)IDC_BTN_STOP, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Pause button for play control
+    CreateWindow("BUTTON", "Pause",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      310, 275, 50, 30, hWnd, (HMENU)IDC_BTN_PAUSE, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Next button for play control
+    CreateWindow("BUTTON", "Next",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      375, 280, 40, 20, hWnd, (HMENU)IDC_BTN_NEXT, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Upload button for uploading files
+    CreateWindow("BUTTON", "Upload",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      50, 10, 80, 20, hWnd, (HMENU)IDC_BTN_UPLOAD, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (             // Download button for downloading files
+    CreateWindow("BUTTON", "Download",
+      WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
+      380, 10, 80, 20, hWnd, (HMENU)IDC_BTN_DOWNLOAD, NULL, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+   SendMessage(
+    progress = CreateWindowEx(WS_EX_CLIENTEDGE, PROGRESS_CLASS, "Progress",  // progress bar
+      WS_CHILD|WS_VISIBLE|PBS_SMOOTH|PBS_MARQUEE,
+      50, 315, 600, 20, hWnd, NULL, hInst, NULL)
+    ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("STATIC", "Song List",
+    WS_CHILD|WS_VISIBLE|SS_CENTER, 
+    50, 40, 410, 15, hWnd, (HMENU)-1, NULL, NULL)
+  ,WM_SETFONT, (WPARAM)hFont, TRUE);
+
+  SendMessage (
+  CreateWindow("STATIC", "Channel List",
+    WS_CHILD|WS_VISIBLE|SS_CENTER, 
+    475, 40, 175, 15, hWnd, (HMENU)-1, NULL, NULL)
   ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
   SendMessage (		// create status bar at bottom of window
@@ -376,7 +375,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_PAUSE:
         TStreamStatus status;
         netplay->GetStatus(&status);
-        if (status.fPause) {
+		if(strlen(temp_name) > 0){	// in case pause is pressed before play is pressed for the first time
+        if (status.fPause) {	// if already paused, then resume
           if (netplay->Resume()) {
             SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
             SendMessage(progress, PBM_SETMARQUEE, 1, 0);
@@ -386,19 +386,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			strcat_s(displayCurrent, temp_name);	
 			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
-        } else {
+        } else {				// if not paused, then pause
           if (netplay->Pause()) {
             SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Resume");
             SendMessage(progress, PBM_SETMARQUEE, 0, 0);
             SendMessage(progress, WM_PAINT, 0, 0);
 
 			// display "Currently playing: <song_name>" in status bar
-			strcpy_s(displayCurrent, "Currently playing: ");
-			strcat_s(displayCurrent, temp_name);	
-			strcat_s(displayCurrent, " - PAUSED");
-			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+			
+			  strcpy_s(displayCurrent, "Currently playing: ");
+			  strcat_s(displayCurrent, temp_name);	
+			  strcat_s(displayCurrent, " - PAUSED");
+			  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+			
           }
         }
+		}
         break;
 
       case ID_SONGS_PLAYPREV:
@@ -477,11 +480,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case ID_LS_CHANNELS:
         if (wmEvent != LBN_DBLCLK)
           break;
+
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
-        // Start progress bar marquee
-        SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
-        SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+        
 
         keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
@@ -494,6 +496,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           //SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
 		  SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
           CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
+
+		  // Start progress bar marquee
+          SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
+          SendMessage(progress, PBM_SETMARQUEE, 1, 0);
 
 		  // display "Currently playing: <channel name>" in status bar
 		  strcpy_s(displayCurrent, "Currently playing: ");
@@ -510,10 +516,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
           SendMessage(progress, PBM_SETMARQUEE, 0, 0);
           keep_streaming_channel = false;
+		  send_ec(sock, "stop-stream\n", 14, 0);
+		  stop_and_reset_player();
 
-		  // display "Currently playing: " in status bar
-		  strcpy_s(displayCurrent, "Currently playing: ");
-		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+		  // clear status bar text
+		  strcpy_s(displayCurrent, "");
+		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 
         }
        break;
 

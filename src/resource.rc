@@ -40,30 +40,31 @@ IDC_DCWIN1 MENU
 BEGIN
     POPUP "File"
     BEGIN
-        MENUITEM "Select Server",               ID_SETUP_SELECTSERVER
-        MENUITEM "Refresh Services",            ID_FILE_REFRESHSERVICES
+        MENUITEM "Select &Server",              ID_SETUP_SELECTSERVER
+        MENUITEM "&View FFT",                   ID_Menu
+        MENUITEM "&Refresh Services",           ID_FILE_REFRESHSERVICES
         MENUITEM SEPARATOR
-        MENUITEM "Exit",                        IDM_EXIT
+        MENUITEM "&Exit",                       IDM_EXIT
     END
     POPUP "Songs"
     BEGIN
-        MENUITEM "Play",                        ID_SONGS_PLAYSELECTEDSONG
-        MENUITEM "Pause/Resume",                       ID_SONGS_PAUSESELECTEDSONG
-        MENUITEM "Stop",                        ID_SONGS_STOPSELECTEDSONG
-        MENUITEM "Prev",                        ID_SONGS_PLAYPREV
-        MENUITEM "Next",                        ID_SONGS_PLAYNEXT
+        MENUITEM "&Play",                       ID_SONGS_PLAYSELECTEDSONG
+        MENUITEM "Pa&use/Resume",               ID_SONGS_PAUSESELECTEDSONG
+        MENUITEM "&Stop",                       ID_SONGS_STOPSELECTEDSONG
+        MENUITEM "P&revious",                   ID_SONGS_PLAYPREV
+        MENUITEM "&Next",                       ID_SONGS_PLAYNEXT
         MENUITEM SEPARATOR
-        MENUITEM "Download Selected Song",      ID_SONGS_DOWNLOADSELECTEDSONG
-        MENUITEM "Upload Song to List",         ID_SONGS_UPLOADSONGTOLIST
+        MENUITEM "&Download Selected Song",     ID_SONGS_DOWNLOADSELECTEDSONG
+        MENUITEM "&Upload Song to List",        ID_SONGS_UPLOADSONGTOLIST
     END
     POPUP "Channels"
     BEGIN
-        MENUITEM "Stream Selected Channel",     ID_CHANNELS_STREAMSELECTEDCHANNEL
-        MENUITEM "Stop Streaming",              ID_CHANNELS_STOPSTREAMING
+        MENUITEM "&Stream Selected Channel",    ID_CHANNELS_STREAMSELECTEDCHANNEL
+        MENUITEM "Sto&p Streaming",             ID_CHANNELS_STOPSTREAMING
     END
     POPUP "Voice Chat"
     BEGIN
-        MENUITEM "Chat with Server",            ID_VOICECHAT_CHATWITHSERVER
+        MENUITEM "&Chat with Server",           ID_VOICECHAT_CHATWITHSERVER
     END
     POPUP "&Help"
     BEGIN

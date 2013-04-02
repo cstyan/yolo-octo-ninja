@@ -128,10 +128,6 @@ void create_gui (HWND hWnd) {
       215, 275, 80, 30, hWnd, (HMENU)IDC_BTN_PLAY, NULL, NULL)
     ,WM_SETFONT, (WPARAM)hFont, TRUE);
 
-
-
- 
-
   SendMessage (             // Prev button for play control
     CreateWindow("BUTTON", "Prev",
       WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP,
@@ -199,7 +195,7 @@ void create_gui (HWND hWnd) {
 
   // Show server hostname dialog box.
   DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
-  hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", WS_VISIBLE, 0, 0, 300, 225, 0, NULL, 0, 0);
+  hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", 0, 0, 0, 300, 225, 0, NULL, 0, 0);
   // Toolbar style window.
   /*hFFTwin = CreateWindowEx(WS_EX_TOOLWINDOW, 
                        (LPSTR)32770,
@@ -540,7 +536,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
           SendMessage(progress, PBM_SETMARQUEE, 0, 0);
           keep_streaming_channel = false;
-		  send_ec(sock, "stop-stream\n", 14, 0);
 		  stop_and_reset_player();
 
 		  // clear status bar text

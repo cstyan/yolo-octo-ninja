@@ -1,3 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: server.cpp
+--
+--	PROGRAM:	server.exe
+--
+--	FUNCTIONS:	
+--
+--	DATE:		Mar 23, 2013
+--
+--	DESIGNERS:	
+--	PROGRAMMERS: 
+--
+--	NOTES:		Contains Main and the main functions for server program.
+------------------------------------------------------------------------------------------------*/
+
+
 #include <direct.h>
 #include <iostream>
 #include "CommAudio.h"

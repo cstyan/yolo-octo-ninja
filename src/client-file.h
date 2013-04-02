@@ -1,3 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: client-file.h
+--
+--	PROGRAM:	client.exe
+--					
+--	DATE:		27/Feb/2013
+--
+--	DESIGNERS:	Jacob Miner
+--	PROGRAMMERS: Jacob Miner
+--
+--	NOTES:		This file contains declarations and definitions for client-file.cpp.
+------------------------------------------------------------------------------------------------*/
+
 #ifndef CLIENTFILE
 #define CLIENTFILE
 

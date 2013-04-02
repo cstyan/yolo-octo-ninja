@@ -1,3 +1,18 @@
+/*---------------------------------------------------------------------------------------------
+--	SOURCE FILE: common.cpp
+--
+--	PROGRAM:	client.exe, server.exe
+--
+--	FUNCTIONS:	SOCKET create_udp_socket (int port)
+--
+--	DATE:		23/Mar/2013
+--
+--	DESIGNERS:	
+--	PROGRAMMERS: 
+--
+--	NOTES:		Some functions common between client and server programs.
+------------------------------------------------------------------------------------------------*/
+
 #include "commaudio.h"
 
 using namespace std;

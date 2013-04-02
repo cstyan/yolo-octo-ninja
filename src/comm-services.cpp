@@ -1,22 +1,19 @@
 /*---------------------------------------------------------------------------------------------
---	SOURCE FILE: ComAudioServices.cpp
+--	SOURCE FILE: comm-services.cpp
 --
---	PROGRAM:	Provides List of Services for ComAudio Project for COMP4985
+--	PROGRAM:	client.exe, server.exe
 --
---	FUNCTIONS USEFUL TO PROJECT:	
+--	FUNCTIONS:	
 --				void ParceServicesList(string list, Services& s)
 --				string ListServices(const Services& s)
 --				void printStruct(const Services& s)
 --					
 --	DATE:		14/Mar/2013
---	REVISION:	2.00	
 --
---	DESIGNER:	Kevin Tangeman
---	PROGRAMMER:	Kevin Tangeman
+--	DESIGNERS:	Kevin Tangeman
+--	PROGRAMMERS: Kevin Tangeman, David Czech
 --
---	NOTES:		This program takes the server's struct full of client options for songs and channels,
---				converts it to a string to send to the client, then reads the string and parses it,
---				and puts it into the client's struct.
+--	NOTES:		Provides services for both client.exe and server.exe
 ------------------------------------------------------------------------------------------------*/
 #include <sstream>
 #include <iostream>
@@ -141,9 +138,9 @@ Services sData, cData;	    // Services structs for server (sData) and client (cD
 --	DESIGNER:	Kevin Tangeman
 --	PROGRAMMER:	Kevin Tangeman
 --
---	INTERFACE:	
+--	INTERFACE:	int main()
 --
---	NOTES:		Main executing function 
+--	NOTES:		Main executing function for testing comm services
 ------------------------------------------------------------------------------------------------*/
 int main(){
 	string text;
@@ -155,7 +152,7 @@ int main(){
 	sData.songs.push_back("Disco Duck");
 	sData.songs.push_back("Disco David Dancing in a Truck");
 
-	sData.channels.push_back("Disco Channel 192.168.0.23:5050");		// copy "name ip:port" to the sData channels vector
+	sData.channels.push_back("Disco Channel 192.168.0.23:5050"); // copy "name ip:port" to the sData channels vector
 	sData.channels.push_back("CNN 192.168.0.24:500");
 	sData.channels.push_back("Rastafarian 192.168.0.13:4550");
 
@@ -181,8 +178,6 @@ int main(){
 	cout << endl <<"Client Data Struct" << endl;
 	cout << "******************" << endl;
 	printStruct(cData);
-
-
 }
 
 //// Utilities

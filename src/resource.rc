@@ -41,7 +41,7 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "Select &Server",              ID_SETUP_SELECTSERVER
-        MENUITEM "&View FFT",                   ID_FILE_VIEWFFT
+        MENUITEM "&View FFT Graph",             ID_FILE_VIEWFFT
         MENUITEM "&Refresh Services",           ID_FILE_REFRESHSERVICES
         MENUITEM SEPARATOR
         MENUITEM "&Exit",                       IDM_EXIT
@@ -65,6 +65,7 @@ BEGIN
     POPUP "Voice Chat"
     BEGIN
         MENUITEM "&Chat with Server",           ID_VOICECHAT_CHATWITHSERVER
+        MENUITEM "&Stop Voice Chat Session",    ID_SONGS_STOPSELECTEDSONG
     END
     POPUP "&Help"
     BEGIN

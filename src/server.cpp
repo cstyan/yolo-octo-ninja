@@ -37,7 +37,6 @@
 #include <direct.h>
 #include <iostream>
 #include "CommAudio.h"
-#include "server-file.h"
 #include "libzplay.h"
 #include <fstream>
 #include <sstream>
@@ -49,9 +48,9 @@ using namespace libZPlay;
 Services s;
 
 struct ChannelInfo {
-   string name;
-   SOCKET sock;   
-   sockaddr_in addr;
+	string name;
+	SOCKET sock;
+	sockaddr_in addr;
 };
 
 // Forward declarations. Only a couple of these are really needed, but all are listed for completeness
@@ -77,8 +76,8 @@ ChannelInfo extract_channel_info(const string& channelString);
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int setup_listening (int port)
 -- RETURNS:		int - the newly created listening socket
@@ -118,8 +117,8 @@ int setup_listening (int port) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	void wait_for_connections (int lsock)
 -- RETURNS:		void
@@ -158,8 +157,8 @@ void wait_for_connections (int lsock) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	DWORD WINAPI handle_client(LPVOID lpParameter)
 -- RETURNS:		DWORD
@@ -226,8 +225,8 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	string recv_request (SOCKET client)
 -- RETURNS:		string - the data received without the terminating newline
@@ -260,8 +259,8 @@ string recv_request (SOCKET client) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	void process_stream_song (ClientContext * ctx, string song)
 -- RETURNS:		void
@@ -313,8 +312,8 @@ void process_stream_song (ClientContext * ctx, string song) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, 
 --						unsigned int param1, unsigned int param2)
@@ -596,8 +595,8 @@ void find_songs (std::vector<string>& songs) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	void get_channels(vector<string>& channelList)
 -- RETURNS:		void
@@ -623,8 +622,8 @@ void get_channels(vector<string>& channelList) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho
+-- PROGRAMMERS: 	Dennis Ho
 --
 -- INTERFACE:	ChannelInfo extract_channel_info(const string& channelString)
 -- RETURNS:		ChannelInfo
@@ -654,8 +653,8 @@ ChannelInfo extract_channel_info(const string& channelString) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int __stdcall multicast_cb(void* instance, void *user_data, 
 --						TCallbackMessage message, unsigned int param1, unsigned int param2)
@@ -692,8 +691,8 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho
+-- PROGRAMMERS: 	Dennis Ho
 --
 -- INTERFACE:	DWORD WINAPI start_channel(LPVOID lpParameter)
 -- RETURNS:		DWORD
@@ -806,8 +805,8 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho
+-- PROGRAMMERS: 	Dennis Ho
 --
 -- INTERFACE:	void start_all_channels()
 -- RETURNS:		void
@@ -826,8 +825,8 @@ void start_all_channels() {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho
+-- PROGRAMMERS: 	Dennis Ho
 --
 -- INTERFACE:	vector<string> retrieve_song_list(const char *playlistName)
 -- RETURNS:		vector<string>
@@ -856,13 +855,14 @@ vector<string> retrieve_song_list(const char *playlistName) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int main(int argc, char const *argv[])
 -- RETURNS:		int
 --
--- NOTES:		The main function  to run the server program.
+-- NOTES:		Initializes winsock, changes into the user's Music directory and finds all 
+--					available songs, channels and services before waiting for client connections.
 ----------------------------------------------------------------------------------------------*/
 int main(int argc, char const *argv[])
 {
@@ -873,23 +873,23 @@ int main(int argc, char const *argv[])
 	
 	// Initialize some services.
 	s.microphone = true;
-	/*s.songs.push_back("tol.flac");
-	s.songs.push_back("song2.mp3");
-	s.songs.push_back("song3.mp3");*/
 
+	// Move to Music Directory
 	char * u = getenv ("USERPROFILE");
 	string path(u);
 	path += "\\Music\\";
 	_chdir(path.c_str());
 
+	// Find all songs
 	find_songs(s.songs);
-	//add_files_to_songs(s.songs, (path+"*.mp3").c_str());
+	
+	// Get and start channels
 	get_channels(s.channels);	
 	start_all_channels();
 
+	// Setup listening socket and wait for connections.
 	int sock = setup_listening();
 	wait_for_connections (sock);
-	
-	
+
 	return 0;
 }

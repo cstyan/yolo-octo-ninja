@@ -66,13 +66,13 @@ char temp_name[1024];
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  void set_progress_bar (int value)
--- RETURNS:    void
+-- RETURNS:    nothing
 --
--- NOTES: 	
+-- NOTES: 	Set the value of the progress bar, removes marquee mode if active.
 ----------------------------------------------------------------------------------------------*/
 void set_progress_bar (int value) {
   SetWindowLong (progress, GWL_STYLE, WS_CHILD|WS_VISIBLE|PBS_SMOOTH);
@@ -85,13 +85,13 @@ void set_progress_bar (int value) {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  void set_progress_bar_range (size_t total_size)
--- RETURNS:    void
+-- RETURNS:    nothing
 --
--- NOTES: 	
+-- NOTES: 	Set the maximum range of the progress bar.
 ----------------------------------------------------------------------------------------------*/
 void set_progress_bar_range (size_t total_size) {
   SendMessage(progress, PBM_SETRANGE32, 0, total_size);
@@ -103,13 +103,13 @@ void set_progress_bar_range (size_t total_size) {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  void increment_progress_bar (size_t amount)
 -- RETURNS:    void
 --
--- NOTES: 	
+-- NOTES: 	Increment the progress bar value by the specified amount and updates it
 ----------------------------------------------------------------------------------------------*/
 void increment_progress_bar (size_t amount) {
   SendMessage(progress, PBM_DELTAPOS, amount, 0);
@@ -121,14 +121,14 @@ void increment_progress_bar (size_t amount) {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  int send_ec (int s, const char* buf, size_t len, int flags)
 -- RETURNS:    int
 --
 -- NOTES: 	Wrapper for sending with error checking and reporting 
---				(shows a messagebox if call failed).
+--				(shows a messagebox if the call failed).
 ----------------------------------------------------------------------------------------------*/
 int send_ec (int s, const char* buf, size_t len, int flags) {
   int ret;
@@ -145,13 +145,13 @@ int send_ec (int s, const char* buf, size_t len, int flags) {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  bool check_connected ()
 -- RETURNS:    bool
 --
--- NOTES: 	
+-- NOTES: 	Returns if the client is currently connected, or displays an error message to the user.
 ----------------------------------------------------------------------------------------------*/
 bool check_connected () {
   if (sock == 0)
@@ -165,7 +165,7 @@ bool check_connected () {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:	David Czech
+-- DESIGNERS:	  David Czech
 -- PROGRAMMERS:	David Czech, Kevin Tangeman
 --
 -- INTERFACE:	void create_gui (HWND hWnd)
@@ -380,7 +380,7 @@ void stop_and_reset_player() {
 -- INTERFACE:  DWORD WINAPI fft_draw_loop (LPVOID lpParamter)
 -- RETURNS:    DWORD
 --
--- NOTES: 	
+-- NOTES: 	Thread proc to draw the FFT Graph in a continuous loop.
 ----------------------------------------------------------------------------------------------------*/
 DWORD WINAPI fft_draw_loop (LPVOID lpParamter) {
   while (true) {
@@ -728,6 +728,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 
   case WM_DESTROY:
+    if (voice_ctx != NULL) {
+      const char c = 0;
+      // Terminate Voice Chat session.
+      sendto(voice_ctx->udp, &c, 0, 0, (const sockaddr*)&voice_ctx->addr, sizeof(sockaddr_in));
+      // Delete and null out voice_ctx, so it's available next time.
+      delete voice_ctx;
+      voice_ctx = NULL;
+    }
     // Tell the server to stop the stream before quiting.
     send(sock, "stop-stream\n", 14, 0);
     PostQuitMessage(0);

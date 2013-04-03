@@ -5,10 +5,10 @@
 --					
 --	DATE:		11/Mar/2013
 --
---	DESIGNERS:	
+--	DESIGNERS:	David Czech
 --	PROGRAMMERS: Kevin Tangeman
 --
---	NOTES:		This file contains declarations and definitions for client-file.cpp.
+--	NOTES:		This file contains declarations and definitions for the CommAudio Application
 ------------------------------------------------------------------------------------------------*/
 
 #define _WIN32_WINNT 0x0502

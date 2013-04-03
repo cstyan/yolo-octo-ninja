@@ -18,8 +18,8 @@
 --					
 --	DATE:		11/Mar/2013
 --
---	DESIGNERS:	
---	PROGRAMMERS: 
+--	DESIGNERS:	 David Czech, Dennis Ho
+--	PROGRAMMERS: David Czech, Dennis Ho
 --
 --	NOTES:		Provides main comm functions for client.exe
 ------------------------------------------------------------------------------------------------*/
@@ -43,9 +43,9 @@ ZPlay * netplay = NULL;
 const string SERVICE_REQUEST_STRING = "list-services\n";
 
 struct ChannelInfo {
-   string name;
-   SOCKET sock;   
-   sockaddr_in addr;
+	string name;
+	SOCKET sock;
+	sockaddr_in addr;
 };
 
 
@@ -54,13 +54,14 @@ struct ChannelInfo {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int comm_connect (const char * host, int port)
 -- RETURNS:		int - socket descriptor
 --
--- NOTES:		
+-- NOTES:		Connects to the specified host on the specified port, or displays an error
+					message box on failure.
 ----------------------------------------------------------------------------------------------*/
 int comm_connect (const char * host, int port) {
 	hostent	*hp;
@@ -97,13 +98,13 @@ int comm_connect (const char * host, int port) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	void request_services(SOCKET sock)
 -- RETURNS:		void
 --
--- NOTES:		
+-- NOTES:		Send a request for a list of available services on the server.
 ----------------------------------------------------------------------------------------------*/
 void request_services(SOCKET sock) {   
    send_ec(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
@@ -115,13 +116,15 @@ void request_services(SOCKET sock) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	string recv_services (int sd)
--- RETURNS:		string
+--  int sd - socket descriptor to get services reply from.
 --
--- NOTES:		
+-- RETURNS:		a string with all the services data.
+--
+-- NOTES:		After the request to list servicies is sent, this function will get the results.
 ----------------------------------------------------------------------------------------------*/
 string recv_services (int sd) {
 	string out;
@@ -148,13 +151,13 @@ string recv_services (int sd) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	void stream_song ()
--- RETURNS:		void
+-- RETURNS:		nothing
 --
--- NOTES:		
+-- NOTES:		Stream a song: Continuously recv()s and pushes sound data to playback.
 ----------------------------------------------------------------------------------------------*/
 void stream_song () {
 	// Close stream
@@ -205,13 +208,13 @@ void stream_song () {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	DWORD WINAPI stream_song_proc(LPVOID lpParamter)
 -- RETURNS:		DWORD
 --
--- NOTES:		
+-- NOTES:		Trampoline to stream_song(), simplifies calling technicalities, etc
 ----------------------------------------------------------------------------------------------*/
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	stream_song();
@@ -224,8 +227,8 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho
+-- PROGRAMMERS: 	Dennis Ho
 --
 -- INTERFACE:	ChannelInfo extractChannelInfo(const char *channel)
 -- RETURNS:		ChannelInfo
@@ -254,13 +257,13 @@ ChannelInfo extractChannelInfo(const char *channel) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		Dennis Ho, David Czech
+-- PROGRAMMERS: 	Dennis Ho, David Czech
 --
 -- INTERFACE:	DWORD WINAPI join_channel(LPVOID lpParameter)
 -- RETURNS:		DWORD
 --
--- NOTES:		
+-- NOTES:		Continuously play a multicasted channel stream.
 ----------------------------------------------------------------------------------------------*/
 DWORD WINAPI join_channel(LPVOID lpParameter) {
 	int error;
@@ -320,7 +323,7 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 			else printf("get last error %d\n", err);
 			break;
 		}
-		printf("%lu got %d \n", GetTickCount(), r);
+
 		netplay->PushDataToStream(buf, r);
 		buffed += r;
 		
@@ -342,14 +345,16 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, 
 --					unsigned int param2)
--- RETURNS:		int __stdcall
+-- RETURNS:		int - action for libzplay to take: 
+					1: Skip sending decoded data to sound card.
+					2: Stop playback
 --
--- NOTES:		
+-- NOTES:		sends stream to client udp socket, or stops libzplay instance if there is an error.
 ----------------------------------------------------------------------------------------------*/
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
@@ -367,13 +372,14 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	ClientContext * start_microphone_stream()
--- RETURNS:		ClientContext
+-- RETURNS:		ClientContext * - pointer to an allocated ClientContext, 
+--					containing information about the server microphone stream (UDP socket, etc)
 --
--- NOTES:		
+-- NOTES:		Open microphone stream and setup callbacks to send to server, (re-)uses stream_cb.
 ----------------------------------------------------------------------------------------------*/
 ClientContext * start_microphone_stream() {
 	hostent	*hp;
@@ -410,14 +416,14 @@ ClientContext * start_microphone_stream() {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 --					LPTSTR lpCmdLine, int nCmdShow)
--- RETURNS:		int
+-- RETURNS:		int - error level of application.
 --
--- NOTES:		
+-- NOTES:		Initilizes Winsock, Creates ZPlay instance, initializes GUI, and runs message loop.
 ----------------------------------------------------------------------------------------------*/
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;

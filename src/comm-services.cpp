@@ -7,10 +7,11 @@
 --				void ParceServicesList(string list, Services& s)
 --				string ListServices(const Services& s)
 --				void printStruct(const Services& s)
+--				bool parse_ip_port (string& s, string& ip, unsigned short& port)
 --					
 --	DATE:		14/Mar/2013
 --
---	DESIGNERS:	Kevin Tangeman
+--	DESIGNERS:	 Kevin Tangeman
 --	PROGRAMMERS: Kevin Tangeman, David Czech
 --
 --	NOTES:		Provides services for both client.exe and server.exe
@@ -181,8 +182,8 @@ int main(){
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	bool parse_ip_port (string& s, string& ip, unsigned short& port)
 -- RETURNS:		bool - true if parsing was successful, false otherwise.

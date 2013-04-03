@@ -7,8 +7,8 @@
 --
 --	DATE:		23/Mar/2013
 --
---	DESIGNERS:	
---	PROGRAMMERS: 
+--	DESIGNERS:	David Czech
+--	PROGRAMMERS: David Czech
 --
 --	NOTES:		Some functions common between client and server programs.
 ------------------------------------------------------------------------------------------------*/
@@ -22,8 +22,8 @@ using namespace std;
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		
--- PROGRAMMERS: 	
+-- DESIGNERS:		David Czech
+-- PROGRAMMERS: 	David Czech
 --
 -- INTERFACE:	SOCKET create_udp_socket (int port)
 -- RETURNS:		SOCKET - the new UDP socket created

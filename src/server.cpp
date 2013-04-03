@@ -649,17 +649,11 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	  return false;
 	}
 
-	// Start streaming
-	// Create zplay Instance
+	// Start streaming, Create zplay Instance
 	ZPlay *out = CreateZPlay();
 
 	// Silence player: just in case.
-	//out->SetPlayerVolume(0, 0);
-
-	DWORD dwVolume;
-
-  	if (waveOutGetVolume(NULL, &dwVolume) == MMSYSERR_NOERROR)
-    	waveOutSetVolume(NULL, 0); // mute volume
+	out->SetMasterVolume(0, 0);
 	
 	//services_mutex.lock();
 	vector<string> list = retrieve_song_list(ci.name.c_str());

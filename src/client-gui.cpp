@@ -633,6 +633,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
           SendMessage(progress, PBM_SETMARQUEE, 1, 0);
 
+		  // copy channel to temp_name so that it is displayed instatus bar when paused
+		  strcpy_s(temp_name, channel);
+
 		  // display "Currently playing: <channel name>" in status bar
 		  strcpy_s(displayCurrent, "Currently playing: ");
 		  strcat_s(displayCurrent, channel);	
@@ -663,6 +666,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_FILE_REFRESHSERVICES:
         get_and_display_services(sock);
+		
+		// clear status bar text
+		strcpy_s(displayCurrent, "");
+		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	
         break;
 
       case IDM_EXIT:

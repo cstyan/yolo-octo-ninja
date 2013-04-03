@@ -43,7 +43,6 @@ DWORD WINAPI handle_client(LPVOID);
 void process_stream_song(ClientContext*, string);
 void process_download_file(ClientContext * ctx, string song);
 void process_upload_song(ClientContext * ctx, string song);
-void process_join_channel(ClientContext * ctx, string channel);
 void process_join_voice(ClientContext * ctx);
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
 void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
@@ -168,9 +167,7 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 				else if (req_command == "S")
 					process_stream_song(ctx, param);
 				else if (req_command == "U")
-					process_upload_song(ctx, param);
-				else if (req_command == "C")
-					process_join_channel(ctx, param);
+					process_upload_song(ctx, param);				
 			}
 		}
 	}
@@ -385,33 +382,6 @@ void process_upload_song(ClientContext * ctx, string song) {
 	// Find songs
 	find_songs(s.songs);
 	//services_mutex.unlock();
-}
-
-/*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   process_join_channel
---
--- DATE:       Mar 26, 2013
---
--- DESIGNER:   Dennis Ho
---
--- PROGRAMMER: Dennis Ho
---
--- INTERFACE:  void process_join_channel(ClientContext * ctx, string channel)
---
--- RETURNS: 
---
--- NOTES:      
-----------------------------------------------------------------------------------------------------------------------*/
-void process_join_channel(ClientContext * ctx, string channel) {
-	// Validate
-	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
-		return;
-
-	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-		if (it->compare(channel) == 0)
-		{
-
-		}
 }
 
 void process_join_voice(ClientContext * ctx) {

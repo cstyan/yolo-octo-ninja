@@ -48,20 +48,6 @@ struct ChannelInfo {
    sockaddr_in addr;
 };
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	comm_connect
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	int comm_connect (const char * host, int port)
--- RETURNS:		int - socket descriptor
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 int comm_connect (const char * host, int port) {
 	hostent	*hp;
 	sockaddr_in server;
@@ -91,38 +77,10 @@ int comm_connect (const char * host, int port) {
 	return sd;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	request_services
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	void request_services(SOCKET sock)
--- RETURNS:		void
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 void request_services(SOCKET sock) {   
    send_ec(sock, SERVICE_REQUEST_STRING.c_str(), SERVICE_REQUEST_STRING.length(), 0);
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	recv_services
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	string recv_services (int sd)
--- RETURNS:		string
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 string recv_services (int sd) {
 	string out;
 	char data[BUFSIZE];
@@ -142,20 +100,6 @@ string recv_services (int sd) {
 	return out;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	stream_song
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	void stream_song ()
--- RETURNS:		void
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 void stream_song () {
 	// Close stream
 	netplay->Close();
@@ -199,39 +143,11 @@ void stream_song () {
 	closesocket(song_sock);
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	stream_song_proc
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	DWORD WINAPI stream_song_proc(LPVOID lpParamter)
--- RETURNS:		DWORD
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	stream_song();
 	return 0;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	extractChannelInfo
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	ChannelInfo extractChannelInfo(const char *channel)
--- RETURNS:		ChannelInfo
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 ChannelInfo extractChannelInfo(const char *channel) {
 	ChannelInfo ci;
 	
@@ -248,20 +164,6 @@ ChannelInfo extractChannelInfo(const char *channel) {
 	return ci;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	join_channel
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	DWORD WINAPI join_channel(LPVOID lpParameter)
--- RETURNS:		DWORD
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 DWORD WINAPI join_channel(LPVOID lpParameter) {
 	int error;
 	bool reuseFlag = false;
@@ -272,13 +174,14 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	//ChannelInfo ci = extractChannelInfo(*channel);         
 	ChannelInfo ci = extractChannelInfo((char*)lpParameter);         
 
-	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {
-	  // TODO: error handling
+	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {	  
 		cout << "error socket" << endl;
+		return false;
 	}
 
-	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {
-	  // TODO: error handling
+	if ((error = setsockopt(ci.sock, SOL_SOCKET, SO_REUSEADDR, (char*)&reuseFlag, sizeof(reuseFlag))) == SOCKET_ERROR) {		
+		cout << "error setsockopt" << endl;
+		return false;
 	}
 
 	localAddr.sin_family = AF_INET;
@@ -286,8 +189,8 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	localAddr.sin_port = ci.addr.sin_port;
 
 	if ((error = bind(ci.sock, (struct sockaddr*)&localAddr, sizeof(localAddr))) == SOCKET_ERROR) {
-	  // TODO: error handling
-		cout << "error bind" << endl;
+	  cout << "error bind" << endl;
+		return false;
 	}
 
 	// Join multicast group
@@ -296,8 +199,8 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	stMreq.imr_interface.s_addr = INADDR_ANY;   
 
 	if ((error = setsockopt(ci.sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))) == SOCKET_ERROR) {
-	  // TODO: error handling
 		cout << "error multicast" << endl;
+		return false;
 	}
 
 	netplay->Play();
@@ -336,20 +239,6 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 }
 
 
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	stream_cb
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, 
---					unsigned int param2)
--- RETURNS:		int __stdcall
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
@@ -360,20 +249,6 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 	return 1;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	start_microphone_stream
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	ClientContext * start_microphone_stream()
--- RETURNS:		ClientContext
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 ClientContext * start_microphone_stream() {
 	hostent	*hp;
 	ClientContext * ctx = new ClientContext;
@@ -403,21 +278,6 @@ ClientContext * start_microphone_stream() {
 	return ctx;
 }
 
-
-/*----------------------------------------------------------------------------------------------
--- FUNCTION:	_tWinMain
---
--- DATE:		Mar 23, 2013
---
--- DESIGNERS:		
--- PROGRAMMERS: 	
---
--- INTERFACE:	int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, 
---					LPTSTR lpCmdLine, int nCmdShow)
--- RETURNS:		int
---
--- NOTES:		
-----------------------------------------------------------------------------------------------*/
 int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow) {
 	MSG msg;
 	HWND hwnd;

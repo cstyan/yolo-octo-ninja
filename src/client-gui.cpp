@@ -459,7 +459,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           break;
       case ID_SONGS_PLAYSELECTEDSONG:
       case IDC_BTN_PLAY: {
-		  keep_streaming_channel = false;
+          keep_streaming_channel = false;
+
+          // If there is an active voice session, kill it.
+          if (voice_ctx != NULL) {
+            const char c = 0;
+            // Terminate Voice Chat session.
+            sendto(voice_ctx->udp, &c, 0, 0, (const sockaddr*)&voice_ctx->addr, sizeof(sockaddr_in));
+            // Delete and null out voice_ctx, so it's available next time.
+            delete voice_ctx;
+            voice_ctx = NULL;
+          }
+
           // The stop-stream command isn't necessary here:
           // the server will just switch the current playing song.
           //send(sock, "stop-stream\n", 14, 0);
@@ -576,6 +587,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case IDC_BTN_CHAT:
       case ID_VOICECHAT_CHATWITHSERVER:
+        // Stop channel stream, in case it's active.
+        keep_streaming_channel = false;
+
         // Reset player
         stop_and_reset_player();
         if (voice_ctx == NULL) {
@@ -628,8 +642,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
-        
+        // Another channel stream, in any
         keep_streaming_channel = false;
+
+        // Stop Voice session, if active.
+        if (voice_ctx != NULL) {
+          const char c = 0;
+          // Terminate Voice Chat session.
+          sendto(voice_ctx->udp, &c, 0, 0, (const sockaddr*)&voice_ctx->addr, sizeof(sockaddr_in));
+          // Delete and null out voice_ctx, so it's available next time.
+          delete voice_ctx;
+          voice_ctx = NULL;
+        }
+
         if (hChannelThread)
           WaitForSingleObject(hChannelThread, 3000);
         keep_streaming_channel = true;

@@ -532,6 +532,7 @@ void process_join_voice(ClientContext * ctx) {
 		ctx->decoder->Stop();
 		s.microphone = true;
 		closesocket(ctx->udp);
+		ctx->udp = 0;
 	}
 
 }

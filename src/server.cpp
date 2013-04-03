@@ -583,7 +583,7 @@ void find_songs (std::vector<string>& songs) {
 	};
 
 	// Look for any of the above file types and add them to the songs list.
-	for (size_t i = 0; i < sizeof(songtypes); ++i)
+	for (size_t i = 0; i < 5; ++i)
 	{
 		add_files_to_songs(songs, songtypes[i]);
 	}

@@ -12,7 +12,7 @@ all: obj ../server.exe ../client.exe
 obj:
 	mkdir obj
 
-../server.exe:  $(SERVER_OBJECTS)
+../server.exe: $(SERVER_OBJECTS)
 	@echo "[50%] Compile and link server..."
 	@$(CC) $(CFLAGS) $(SERVER_OBJECTS) $(LIBS) $(W) -o $@
 

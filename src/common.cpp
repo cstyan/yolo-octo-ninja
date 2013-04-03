@@ -16,12 +16,21 @@
 #include "commaudio.h"
 
 using namespace std;
-/*
-* create_udp_socket (int port = 0) 
-*	port - bind to set port, defaults to system port selection
-* Notes: Create a UDP socket and bind it to an address provided by the system.
-* Returns the new UDP socket created
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	create_udp_socket
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	SOCKET create_udp_socket (int port)
+-- RETURNS:		SOCKET - the new UDP socket created
+--
+-- NOTES:		Creates a UDP socket and bind it to an address provided by the system.
+--				port - bind to set port, defaults to system port selection
+----------------------------------------------------------------------------------------------*/
 SOCKET create_udp_socket (int port) {
 	SOCKET sd;
 	sockaddr_in client;

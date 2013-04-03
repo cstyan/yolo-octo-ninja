@@ -24,20 +24,18 @@
 using namespace std;
 
 /*---------------------------------------------------------------------------------------
--- 	FUNCTION: ParseServicesList()
+-- 	FUNCTION:	ParseServicesList()
 --
--- 	DATE: 	5/Mar/2013
--- 	REVISIONS: 
---			18/Mar/2013 - David Czech - improved efficiency with stringstreams
+-- 	DATE: 		5/Mar/2013
 --
--- 	DESIGNER: Kevin Tangeman
--- 	PROGRAMMER: Kevin Tangeman
+-- 	DESIGNER:	Kevin Tangeman
+-- 	PROGRAMMER: Kevin Tangeman, David Czech
 --
--- 	INTERFACE: void ParceServicesList(string list, Services& s)
--- 	RETURNS: void
+-- 	INTERFACE:	void ParceServicesList(string list, Services& s)
+-- 	RETURNS:	void
 --
--- 	NOTES:	This function reads in the string sent from the server and updates the
---			Services struct on the client.
+-- 	NOTES:		This function reads in the string sent from the server and updates the
+--				Services struct on the client.
 ----------------------------------------------------------------------------------------*/
 void ParseServicesList(string list, Services& s)
 {
@@ -61,21 +59,20 @@ void ParseServicesList(string list, Services& s)
 }
 
 /*---------------------------------------------------------------------------------------
--- 	FUNCTION: ListServices()
+-- 	FUNCTION:	ListServices()
 --
--- 	DATE: 5/Mar/2013
--- 	REVISIONS: 
+-- 	DATE:		5/Mar/2013
 --
--- 	DESIGNER: Kevin Tangeman
+-- 	DESIGNER:	Kevin Tangeman
 -- 	PROGRAMMER: Kevin Tangeman
 --
--- 	INTERFACE: string ListServices(const Services& s)
--- 	RETURNS: string - listing all services currently available to the client
+-- 	INTERFACE:	string ListServices(const Services& s)
+-- 	RETURNS:	string - listing all services currently available to the client
 --
--- 	NOTES:	This function generates a string from the Services struct to send to the 
--- 			client.
---			The string will look like "S song1.wav\nS song2.wav\nC channel1 ipaddress:port\nC 
---			channel2 ipaddress:port\nM true/false"
+-- 	NOTES:		This function generates a string from the Services struct to send to the 
+-- 				client.
+--				The string will look like "S song1.wav\nS song2.wav\nC channel1 ipaddress:port\nC 
+--				channel2 ipaddress:port\nM true/false"
 ----------------------------------------------------------------------------------------*/
 string ListServices(const Services& s) {
 	vector<string>::const_iterator it;
@@ -95,18 +92,17 @@ string ListServices(const Services& s) {
 
 
 /*---------------------------------------------------------------------------------------
--- 	FUNCTION: printStruct()
+-- 	FUNCTION:	printStruct()
 --
--- 	DATE: 14/Mar/2013
--- 	REVISIONS: 2.00
+-- 	DATE:		14/Mar/2013
 --
--- 	DESIGNER: Kevin Tangeman
+-- 	DESIGNER:	Kevin Tangeman
 -- 	PROGRAMMER: Kevin Tangeman
 --
--- 	INTERFACE: void printStruct(const Services& s)
--- 	RETURNS: void
+-- 	INTERFACE:	void printStruct(const Services& s)
+-- 	RETURNS:	void
 --
--- 	NOTES:	This function prints out the contents of the Services struct.
+-- 	NOTES:		This function prints out the contents of the Services struct.
 ----------------------------------------------------------------------------------------*/
 void printStruct(const Services& s) {
 	vector<string>::const_iterator it;
@@ -133,7 +129,6 @@ Services sData, cData;	    // Services structs for server (sData) and client (cD
 --	FUNCTION:	main
 --
 --	DATE:		14/Mar/2013
---	REVISION:	1.00	
 --
 --	DESIGNER:	Kevin Tangeman
 --	PROGRAMMER:	Kevin Tangeman
@@ -180,13 +175,24 @@ int main(){
 	printStruct(cData);
 }
 
-//// Utilities
-// Function parse_ip_port - parse ip and port fields from a string.
-// Interface: bool parse_ip_port (string& s, string& ip, unsigned short& port)
-//   s - reference to a string containing the "ip:port" to parse.
-//   ip - output of the resulting IP string.
-//   port - output of the resulting port.
-// Returns: boolean - true if parsing was successful, false otherwise.
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	parse_ip_port
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	bool parse_ip_port (string& s, string& ip, unsigned short& port)
+-- RETURNS:		bool - true if parsing was successful, false otherwise.
+--
+-- NOTES:		Parse ip and port fields from a string.
+--				Interface: bool parse_ip_port (string& s, string& ip, unsigned short& port)
+--				s - reference to a string containing the "ip:port" to parse.
+--				ip - output of the resulting IP string.
+--				port - output of the resulting port.
+----------------------------------------------------------------------------------------------*/
 bool parse_ip_port (string& s, string& ip, unsigned short& port) {
   stringstream ss( s );
   if (ss.eof() || !getline( ss, ip, ':' )) 

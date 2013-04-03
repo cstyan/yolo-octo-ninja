@@ -519,12 +519,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SendMessage(progress, WM_PAINT, 0, 0);
 
 			// display "Currently playing: <song_name>" in status bar
-			
-			  strcpy_s(displayCurrent, "Currently playing: ");
-			  strcat_s(displayCurrent, temp_name);	
-			  strcat_s(displayCurrent, " - PAUSED");
-			  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
-			
+			strcpy_s(displayCurrent, "Currently playing: ");
+			strcat_s(displayCurrent, temp_name);	
+			strcat_s(displayCurrent, " - PAUSED");
+			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
         }
 		}
@@ -571,8 +569,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // start microphone stream
         start_microphone_stream();
 
+		// display "Currently playing: Live Chat" in status bar
 		strcpy_s(displayCurrent, "Currently playing: ");
-		strcat_s(displayCurrent, "Live Chat");	// display "Currently playing: Live Chat" in status bar
+		strcat_s(displayCurrent, "Live Chat");	
 		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
         break;
 
@@ -621,7 +620,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
           char* channel = new char[BUFSIZE];
-          //SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)channel);
 		  SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
           hChannelThread = CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
 
@@ -740,7 +738,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND& hwnd)
 -- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  ATOM MyRegisterClass(HINSTANCE hInstance)
--- RETURNS:    
+-- RETURNS:    RegisterClassEx
 --
 -- NOTES: 		Registers the window class. 
 --				This function and its usage are only necessary if you want this code
@@ -844,8 +842,10 @@ INT_PTR CALLBACK ServerSetup(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 					if (sock) {
 						get_and_display_services(sock);	// display services from new server
 						EndDialog(hDlg, LOWORD(wParam));	// close dialog box
+
+						// display server connected to in status bar
 						strcpy_s(displayServer, "Connected to: ");
-						strcat_s(displayServer, server);	// display server connected to in status bar
+						strcat_s(displayServer, server);	
 						SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM)displayServer);
 					}
 					return (INT_PTR)TRUE;

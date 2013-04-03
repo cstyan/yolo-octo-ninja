@@ -50,15 +50,15 @@ struct ChannelInfo {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	comm_connect
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	int comm_connect (const char * host, int port)
+-- RETURNS:		int - socket descriptor
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -93,15 +93,15 @@ int comm_connect (const char * host, int port) {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	request_services
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	void request_services(SOCKET sock)
+-- RETURNS:		void
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -111,15 +111,15 @@ void request_services(SOCKET sock) {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	recv_services
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	string recv_services (int sd)
+-- RETURNS:		string
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -144,15 +144,15 @@ string recv_services (int sd) {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	stream_song
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	void stream_song ()
+-- RETURNS:		void
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -201,15 +201,15 @@ void stream_song () {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	stream_song_proc
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	DWORD WINAPI stream_song_proc(LPVOID lpParamter)
+-- RETURNS:		DWORD
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -218,25 +218,21 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 	return 0;
 }
 
-<<<<<<< HEAD
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	extractChannelInfo
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	ChannelInfo extractChannelInfo(const char *channel)
+-- RETURNS:		ChannelInfo
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
-ChannelInfo extractChannelInfo(const string& channel) {
-=======
 ChannelInfo extractChannelInfo(const char *channel) {
->>>>>>> ba14e58958b6c3fbef82c3cbefd207ca9b2bc11f
 	ChannelInfo ci;
 	
 	string channelString(channel);
@@ -252,25 +248,21 @@ ChannelInfo extractChannelInfo(const char *channel) {
 	return ci;
 }
 
-<<<<<<< HEAD
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	join_channel
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	DWORD WINAPI join_channel(LPVOID lpParameter)
+-- RETURNS:		DWORD
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
-DWORD WINAPI join_channel(LPVOID lpParamter) {
-=======
 DWORD WINAPI join_channel(LPVOID lpParameter) {
->>>>>>> ba14e58958b6c3fbef82c3cbefd207ca9b2bc11f
 	int error;
 	bool reuseFlag = false;
 	SOCKADDR_IN localAddr, sourceAddr;
@@ -345,15 +337,16 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	stream_cb
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, 
+--					unsigned int param2)
+-- RETURNS:		int __stdcall
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -369,15 +362,15 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	start_microphone_stream
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	ClientContext * start_microphone_stream()
+-- RETURNS:		ClientContext
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/
@@ -412,15 +405,16 @@ ClientContext * start_microphone_stream() {
 
 
 /*----------------------------------------------------------------------------------------------
--- FUNCTION:		
+-- FUNCTION:	_tWinMain
 --
 -- DATE:		Mar 23, 2013
 --
 -- DESIGNERS:		
 -- PROGRAMMERS: 	
 --
--- INTERFACE:		
--- RETURNS:		
+-- INTERFACE:	int APIENTRY _tWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+--					LPTSTR lpCmdLine, int nCmdShow)
+-- RETURNS:		int
 --
 -- NOTES:		
 ----------------------------------------------------------------------------------------------*/

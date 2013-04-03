@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*---------------------------------------------------------------------------------------------
 --	SOURCE FILE: server.cpp
 --
@@ -29,22 +28,6 @@
 --
 --	NOTES:		Contains Main and the main functions for server program.
 ------------------------------------------------------------------------------------------------*/
-=======
-/*---------------------------------------------------------------------------------------------
---	SOURCE FILE: server.cpp
---
---	PROGRAM:	server.exe
---
---	FUNCTIONS:	
---
---	DATE:		Mar 23, 2013
---
---	DESIGNERS:	
---	PROGRAMMERS: 
---
---	NOTES:		Contains Main and the main functions for server program.
-------------------------------------------------------------------------------------------------*/
->>>>>>> ba14e58958b6c3fbef82c3cbefd207ca9b2bc11f
 
 #include <direct.h>
 #include <iostream>
@@ -86,12 +69,21 @@ void find_songs (std::vector<string>& songs);
 vector<string> retrieve_song_list(const char *playlistName);
 ChannelInfo extract_channel_info(const string& channelString);
 
-/*
-* setup_listening (int port = 1337)
-*   port - the port number to listen on
-* Notes: Creates a TCP socket and listens on a port (1337 by default)
-* Returns the newly created listening socket.
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	setup_listening
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	int setup_listening (int port)
+-- RETURNS:		int - the newly created listening socket
+--
+-- NOTES:		Creates a TCP socket and listens on a port (1337 by default).
+--				port - the port number to listen on
+----------------------------------------------------------------------------------------------*/
 int setup_listening (int port) {
 	SOCKET lsock;
 	struct	sockaddr_in server;
@@ -119,12 +111,21 @@ int setup_listening (int port) {
 	return lsock;
 }
 
-/*
-* wait_for_connections (int lsock)
-*   lsock - the listening socket to wait on.
-* Notes: Wait for new connections and start a thread to handle accepted clients.
-* Returns void
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	wait_for_connections
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void wait_for_connections (int lsock)
+-- RETURNS:		void
+--
+-- NOTES:		Wait for new connections and start a thread to handle accepted clients.
+--				lsock - the listening socket to wait on
+----------------------------------------------------------------------------------------------*/
 void wait_for_connections (int lsock) {
 	SOCKET new_sd;
 	struct	sockaddr_in client;
@@ -150,12 +151,21 @@ void wait_for_connections (int lsock) {
 	}
 }
 
-/*
-* handle_client (LPVOID lpParameter) 
-*   lpParamater - should be a pointer to the ClientContext of the client to handle.
-* Notes: Handle a client's requests.
-* Returns unused.
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	handle_client
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	DWORD WINAPI handle_client(LPVOID lpParameter)
+-- RETURNS:		DWORD
+--
+-- NOTES:		Handle a client's requests.
+--				lpParamater - should be a pointer to the ClientContext of the client to handle.
+----------------------------------------------------------------------------------------------*/
 DWORD WINAPI handle_client(LPVOID lpParameter) {
 	ClientContext * ctx = (ClientContext *) lpParameter;
 	SOCKET client = ctx->control;
@@ -202,8 +212,6 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 					process_stream_song(ctx, param);
 				else if (req_command == "U")
 					process_upload_song(ctx, param);
-				else if (req_command == "C")
-					process_join_channel(ctx, param);
 			}
 		}
 	}
@@ -211,12 +219,21 @@ DWORD WINAPI handle_client(LPVOID lpParameter) {
 	return 0;
 }
 
-/*
-* recv_request (SOCKET client) - recv a request from a client.
-*   client - the client SOCKET to recv the request from.
-* Notes: Recv until a newline is encountered.
-* Returns the data received without the terminating newline.
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	recv_request
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	string recv_request (SOCKET client)
+-- RETURNS:		string - the data received without the terminating newline
+--
+-- NOTES:		Recv a request from a client until a newline is encountered.
+--				client - the client SOCKET to recv the request from
+----------------------------------------------------------------------------------------------*/
 string recv_request (SOCKET client) {
 	string out;
 	char data[BUFSIZE];
@@ -237,13 +254,22 @@ string recv_request (SOCKET client) {
 	return out;
 }
 
-/*
-* process_stream_song (SOCKET client, ClientContext * ctx, string song) .
-*   ctx - should be a pointer to the ClientContext of the client to handle.
-* 	song - a C++ string containing the song that will be streamed to the client.
-* Notes: Recv until a newline is encountered.
-* Returns the data received without the terminating newline.
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	process_stream_song
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void process_stream_song (ClientContext * ctx, string song)
+-- RETURNS:		void
+--
+-- NOTES:		Recv until a newline is encountered.
+--				ctx - should be a pointer to the ClientContext of the client to handle.
+--				song - a C++ string containing the song that will be streamed to the client.
+----------------------------------------------------------------------------------------------*/
 void process_stream_song (ClientContext * ctx, string song) {
 	cout << "Streaming song: " << song << endl;
 	// Validate
@@ -281,16 +307,26 @@ void process_stream_song (ClientContext * ctx, string song) {
 	return;
 }
 
-/*
-* stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2)
-*   void * instance - zplay instance
-*	void * user_data - should be a pointer to ClientContext
-*	message - Message type to handle
-*	param1 - Message parameters 1.
-*	param2 - Message parameters 2.
-* Notes: This callback is called when a chunk of the song has been decoded.
-* Return: 1 to continue decoding, 2 to stop.
-*/
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	stream_cb
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, 
+--						unsigned int param1, unsigned int param2)
+-- RETURNS:		1 to continue decoding, 2 to stop
+--
+-- NOTES:		This callback is called when a chunk of the song has been decoded.
+--				void * instance - zplay instance
+--				void * user_data - should be a pointer to ClientContext
+--				message - Message type to handle
+--				param1 - Message parameters 1.
+--				param2 - Message parameters 2.
+----------------------------------------------------------------------------------------------*/
 int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ClientContext * ctx = (ClientContext *) user_data;
 	sockaddr_in * client_addr = &ctx->addr;
@@ -303,17 +339,15 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   transmit_from_stream
+-- FUNCTION:	transmit_from_stream
 --
--- DATE:       Mar 23, 2013
+-- DATE:		Mar 23, 2013
 --
--- DESIGNER:   Dennis Ho
+-- DESIGNER:	Dennis Ho
+-- PROGRAMMER:	Dennis Ho
 --
--- PROGRAMMER: Dennis Ho
---
--- INTERFACE:  void transmit_from_stream (SOCKET sock, istringstream stream, streamsize packetSize)
---
--- RETURNS: 
+-- INTERFACE:	void transmit_from_stream (SOCKET sock, istringstream stream, streamsize packetSize)
+-- RETURNS:		void
 --
 -- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -336,11 +370,9 @@ void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 -- DATE:       Mar 23, 2013
 --
 -- DESIGNER:   Dennis Ho
---
 -- PROGRAMMER: Dennis Ho
 --
--- INTERFACE:  bool validate_param(string param, SOCKET error_sock, string error_msg)
---
+-- INTERFACE:  bool validate_param(string param, SOCKET error_sock, string error_msg
 -- RETURNS:    true if non-empty string
 --
 -- NOTES:      Sends an error message to the specified socket on failure
@@ -355,17 +387,15 @@ bool validate_param(string param, SOCKET error_sock, string error_msg) {
 }
 
 /*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   process_download_file
+-- FUNCTION:	process_download_file
 --
--- DATE:       Mar 23, 2013
+-- DATE:		Mar 23, 2013
 --
--- DESIGNER:   Dennis Ho
+-- DESIGNER:	Dennis Ho
+-- PROGRAMMER:	Dennis Ho
 --
--- PROGRAMMER: Dennis Ho
---
--- INTERFACE:  void process_download_file (ClientContext * ctx, string song)
---
--- RETURNS: 
+-- INTERFACE:	void process_download_file (ClientContext * ctx, string song)
+-- RETURNS:		void
 --
 -- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -390,6 +420,20 @@ void process_download_file (ClientContext * ctx, string song) {
 	closesocket(ctx->control);
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	process_upload_song
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void process_upload_song(ClientContext * ctx, string song)
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void process_upload_song(ClientContext * ctx, string song) {
 	cout << "Uploading " << song << endl;
 	// Validate
@@ -420,33 +464,20 @@ void process_upload_song(ClientContext * ctx, string song) {
 	//services_mutex.unlock();
 }
 
-/*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:   process_join_channel
---
--- DATE:       Mar 26, 2013
---
--- DESIGNER:   Dennis Ho
---
--- PROGRAMMER: Dennis Ho
---
--- INTERFACE:  void process_join_channel(ClientContext * ctx, string channel)
---
--- RETURNS: 
---
--- NOTES:      
-----------------------------------------------------------------------------------------------------------------------*/
-void process_join_channel(ClientContext * ctx, string channel) {
-	// Validate
-	if (!validate_param(channel, ctx->control, "Invalid channel request: no channel specified!"))
-		return;
 
-	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
-		if (it->compare(channel) == 0)
-		{
-
-		}
-}
-
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	process_join_voice
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void process_join_voice(ClientContext * ctx)
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void process_join_voice(ClientContext * ctx) {
 	cout << "voice" << endl;
 
@@ -507,6 +538,20 @@ void process_join_voice(ClientContext * ctx) {
 	s.microphone = true;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	add_files_to_songs
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void add_files_to_songs (std::vector<string>& songs, const char * file)
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(file, &ffd);
@@ -534,6 +579,20 @@ void find_songs (std::vector<string>& songs) {
 	}
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	get_channels
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void get_channels(vector<string>& channelList)
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void get_channels(vector<string>& channelList) {	
 	string channel;
 			
@@ -547,6 +606,20 @@ void get_channels(vector<string>& channelList) {
 	}
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	extract_channel_info
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	ChannelInfo extract_channel_info(const string& channelString)
+-- RETURNS:		ChannelInfo
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 ChannelInfo extract_channel_info(const string& channelString) {
 	ChannelInfo ci;
 
@@ -564,6 +637,21 @@ ChannelInfo extract_channel_info(const string& channelString) {
 	return ci;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	multicast_cb
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	int __stdcall multicast_cb(void* instance, void *user_data, 
+--						TCallbackMessage message, unsigned int param1, unsigned int param2)
+-- RETURNS:		int
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ChannelInfo *ci = (ChannelInfo*)user_data;
 	
@@ -582,8 +670,21 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 	return 0;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	start_channel
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	DWORD WINAPI start_channel(LPVOID lpParameter)
+-- RETURNS:		DWORD
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 DWORD WINAPI start_channel(LPVOID lpParameter) {
-	//return 0;
 	int error;
 	u_long ttl = 2;
 	bool loopback = false;
@@ -679,12 +780,40 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	return 0;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	start_all_channels
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void start_all_channels()
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void start_all_channels() {
 	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
 		if (CreateThread(NULL, 0, start_channel, (LPVOID)&(*it), 0, NULL) == NULL)
 			cerr << "Couldn't create channel thread!" << endl;	
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	retrieve_song_list
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	vector<string> retrieve_song_list(const char *playlistName)
+-- RETURNS:		vector<string>
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 vector<string> retrieve_song_list(const char *playlistName) {
 	vector<string> list;
 	string song;
@@ -701,6 +830,20 @@ vector<string> retrieve_song_list(const char *playlistName) {
 	return list;
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	main
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	int main(int argc, char const *argv[])
+-- RETURNS:		int
+--
+-- NOTES:		The main function  to run the server program.
+----------------------------------------------------------------------------------------------*/
 int main(int argc, char const *argv[])
 {
 	// Open up a Winsock v2.2 session

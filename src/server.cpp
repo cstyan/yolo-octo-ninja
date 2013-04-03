@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*---------------------------------------------------------------------------------------------
 --	SOURCE FILE: server.cpp
 --
@@ -563,6 +564,20 @@ void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	}
 }
 
+
+/*----------------------------------------------------------------------------------------------
+-- FUNCTION:	find_songs
+--
+-- DATE:		Mar 23, 2013
+--
+-- DESIGNERS:		
+-- PROGRAMMERS: 	
+--
+-- INTERFACE:	void find_songs (std::vector<string>& songs)
+-- RETURNS:		void
+--
+-- NOTES:		
+----------------------------------------------------------------------------------------------*/
 void find_songs (std::vector<string>& songs) {
 	char songtypes[][7] = {
 		{"*.flac"},

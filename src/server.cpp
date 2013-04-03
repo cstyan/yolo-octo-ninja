@@ -434,7 +434,7 @@ void process_upload_song(ClientContext * ctx, string song) {
 -- NOTES:  Starts voice chat with client. Only one client may start voice communication at one time.
 ----------------------------------------------------------------------------------------------------------------------*/
 void process_join_voice(ClientContext * ctx) {
-	cout << "voice request" << endl;
+	cout << "voice request: " << (s.microphone ? "processing..." : "already in use, dropped...")<< endl;
 
 	// Only allow one microphone user, like a sempahore.
 	if (s.microphone) {
@@ -479,16 +479,18 @@ void process_join_voice(ClientContext * ctx) {
 			
 			// 	Recv from client
 			int r = recvfrom (ctx->udp, buf, 65507, 0, (sockaddr*)&server, &size);
-			
 			if (r == 0)
 				continue_streaming = false;
 
 			// 	push data to stream
 			player->PushDataToStream(buf, r);
 		}
+		cout << "Voice Chat session ended" << endl;
+		ctx->decoder->Stop();
+		s.microphone = true;
+		closesocket(ctx->udp);
 	}
 
-	s.microphone = true;
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -584,7 +586,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 	if (message == MsgWaveBuffer)
 		while (param2) {
 			size_t sb = min(1024, (int)param2);
-			//cout << "Sending " << sb << endl;
+
 			if (sendto(ci->sock, (const char *)param1, sb, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0) {
 				return 2;
 			} else {
@@ -593,7 +595,12 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 			}
 		}
 	
-	return 0;
+	DWORD now = GetTickCount();
+
+	while (GetTickCount() - now < 40)
+		Sleep(5);
+
+	return 1;
 }
 
 DWORD WINAPI start_channel(LPVOID lpParameter) {
@@ -651,9 +658,7 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 
 	// Start streaming, Create zplay Instance
 	ZPlay *out = CreateZPlay();
-
-	// Silence player: just in case.
-	out->SetMasterVolume(0, 0);
+	out->SetMasterVolume(100, 100);
 	
 	//services_mutex.lock();
 	vector<string> list = retrieve_song_list(ci.name.c_str());

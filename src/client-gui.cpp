@@ -374,8 +374,8 @@ void stop_and_reset_player() {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNERS:   
--- PROGRAMMERS: 
+-- DESIGNERS:   David Czech
+-- PROGRAMMERS: David Czech
 --
 -- INTERFACE:  DWORD WINAPI fft_draw_loop (LPVOID lpParamter)
 -- RETURNS:    DWORD
@@ -413,6 +413,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
   static HBRUSH hbrBkgnd;  // handle of background colour brush  
   static COLORREF crBkgnd; // color of main window background 
   static HANDLE hChannelThread = 0;
+  static ClientContext * voice_ctx = NULL;
 
   switch (message) {
 
@@ -468,7 +469,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           if (lbItem != LB_ERR) {
             char* song_name = new char[BUFSIZE];
             SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
-			strcpy(temp_name, song_name);			// copy song_name to temp_name for "pause" function
+            strcpy(temp_name, song_name);			// copy song_name to temp_name for "pause" function
             cout << "Song selected " << song_name << endl;
             // Build and send request line
             string request = "S " + string(song_name) + "\n";
@@ -478,10 +479,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
               SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
               SendMessage(progress, PBM_SETMARQUEE, 1, 1);
 
-			  // display "Currently playing: <song_name>" in status bar
-			  strcpy_s(displayCurrent, "Currently playing: ");
-			  strcat_s(displayCurrent, song_name);	
-			  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+            // display "Currently playing: <song_name>" in status bar
+            strcpy_s(displayCurrent, "Currently playing: ");
+            strcat_s(displayCurrent, song_name);	
+            SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
             }
           }
           break;
@@ -489,7 +490,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       case ID_SONGS_STOPSELECTEDSONG:
       case IDC_BTN_STOP:
-		keep_streaming_channel = false;
+        keep_streaming_channel = false;
+
+        if (voice_ctx != NULL) {
+          const char c = 0;
+          // Terminate Voice Chat session.
+          sendto(voice_ctx->udp, &c, 0, 0, (const sockaddr*)&voice_ctx->addr, sizeof(sockaddr_in));
+          // Delete and null out voice_ctx, so it's available next time.
+          delete voice_ctx;
+          voice_ctx = NULL;
+        }
 
         // Stop progress bar marquee
         SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE)| PBS_MARQUEE);
@@ -499,24 +509,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         stop_and_reset_player();
         netplay->Stop();
         SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause"); // change button text
-		strcpy_s(displayCurrent, "");
-		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // clear status bar text
+        strcpy_s(displayCurrent, "");
+        SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // clear status bar text
         break;
 
       case ID_SONGS_PAUSESELECTEDSONG:
       case IDC_BTN_PAUSE:
         TStreamStatus status;
         netplay->GetStatus(&status);
-		if(strlen(temp_name) > 0){	// in case pause is pressed before play is pressed for the first time
-        if (status.fPause) {	// if already paused, then resume
-          if (netplay->Resume()) {
-            SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
-            SendMessage(progress, PBM_SETMARQUEE, 1, 0);
+        if(strlen(temp_name) > 0){	// in case pause is pressed before play is pressed for the first time
+            if (status.fPause) {	// if already paused, then resume
+              if (netplay->Resume()) {
+                SendMessage(GetDlgItem(hWnd, IDC_BTN_PAUSE), WM_SETTEXT, 0, (LPARAM) "Pause");
+                SendMessage(progress, PBM_SETMARQUEE, 1, 0);
 
-			// display "Currently playing: <song_name>" in status bar
-			strcpy_s(displayCurrent, "Currently playing: ");
-			strcat_s(displayCurrent, temp_name);	
-			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+        // display "Currently playing: <song_name>" in status bar
+        strcpy_s(displayCurrent, "Currently playing: ");
+        strcat_s(displayCurrent, temp_name);	
+        SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
         } else {				// if not paused, then pause
           if (netplay->Pause()) {
@@ -524,11 +534,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SendMessage(progress, PBM_SETMARQUEE, 0, 0);
             SendMessage(progress, WM_PAINT, 0, 0);
 
-			// display "Currently playing: <song_name>" in status bar
-			strcpy_s(displayCurrent, "Currently playing: ");
-			strcat_s(displayCurrent, temp_name);	
-			strcat_s(displayCurrent, " - PAUSED");
-			SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+            // display "Currently playing: <song_name>" in status bar
+            strcpy_s(displayCurrent, "Currently playing: ");
+            strcat_s(displayCurrent, temp_name);	
+            strcat_s(displayCurrent, " - PAUSED");
+            SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
           }
         }
 		}
@@ -568,24 +578,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case ID_VOICECHAT_CHATWITHSERVER:
         // Reset player
         stop_and_reset_player();
-        
-        // Send voice chat request
-        send_ec(sock, "V\n", 2, 0);
+        if (voice_ctx == NULL) {
+          // Send voice chat request
+          send_ec(sock, "V\n", 2, 0);
 
-        // start microphone stream
-        start_microphone_stream();
+          // Get reply: can we voice chat or is someone else using microphone?
+          //recv();
 
-		// display "Currently playing: Live Chat" in status bar
-		strcpy_s(displayCurrent, "Currently playing: ");
-		strcat_s(displayCurrent, "Live Chat");	
-		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+          // start microphone stream
+          voice_ctx = start_microphone_stream();
+
+          // display "Currently playing: Live Chat" in status bar
+          strcpy_s(displayCurrent, "Currently playing: ");
+          strcat_s(displayCurrent, "Live Chat");  
+          SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);   // change status bar text
+        }
         break;
 
       case IDC_BTN_UPLOAD:
       case ID_SONGS_UPLOADSONGTOLIST:
-		// display "Uploading song to server" in status bar
-		strcpy_s(displayCurrent, "Uploading song to server");
-		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+        // display "Uploading song to server" in status bar
+        strcpy_s(displayCurrent, "Uploading song to server");
+        SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 
         uploadFile(1337);
         break;
@@ -597,10 +611,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
           char* song_name = new char[BUFSIZE];
           SendMessage(slb, LB_GETTEXT, lbItem, (LPARAM)song_name);
 
-		  // display "Downloading song: <song_name>" in status bar
-		  strcpy_s(displayCurrent, "Downloading song: ");
-		  strcat_s(displayCurrent, song_name);	
-		  SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
+          // display "Downloading song: <song_name>" in status bar
+          strcpy_s(displayCurrent, "Downloading song: ");
+          strcat_s(displayCurrent, song_name);	
+          SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM)displayCurrent);	 // change status bar text
 
           downloadFile(1337, song_name);	// call download() with song_name
         }
@@ -615,9 +629,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       case IDC_BTN_STREAM:
       case ID_CHANNELS_STREAMSELECTEDCHANNEL: {
         
-		keep_streaming_channel = false;
-		if (hChannelThread)
-			WaitForSingleObject(hChannelThread, 3000);
+        keep_streaming_channel = false;
+        if (hChannelThread)
+          WaitForSingleObject(hChannelThread, 3000);
         keep_streaming_channel = true;
         // Before joining the channel stop anything currently playing.
         send_ec(sock, "stop-stream\n", 14, 0);
@@ -626,10 +640,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         int lbItem = (int)SendMessage(clb, LB_GETCURSEL, 0, 0); 
         if (lbItem != LB_ERR) {
           char* channel = new char[BUFSIZE];
-		  SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
+          SendMessage(clb, LB_GETTEXT, lbItem, (LPARAM)channel);
           hChannelThread = CreateThread(NULL, 0, join_channel, (LPVOID)channel, 0, NULL);
 
-		  // Start progress bar marquee
+          // Start progress bar marquee
           SetWindowLong (progress, GWL_STYLE, GetWindowLong(progress, GWL_STYLE) | PBS_MARQUEE);
           SendMessage(progress, PBM_SETMARQUEE, 1, 0);
 

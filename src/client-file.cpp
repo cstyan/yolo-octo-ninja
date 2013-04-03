@@ -45,13 +45,16 @@ using namespace std;
 -- DATE: Mar 18, 2013
 --
 -- DESIGNER:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
+--
+-- PROGRAMMER:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: bool DownloadFile(int s, string filename)
+--
 -- RETURNS: true if the file is successfully downloaded, false otherwise..
 --
--- NOTES:	Begins the process of downloading a file to the server. 
---			If a filename is successfully given, the function to actually download the file is called.
+-- NOTES:
+-- Begins the process of downloading a file to the server. 
+-- If a filename is successfully given, the function to actually download the file is called.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool downloadFile(int s, std::string filename)
 {
@@ -84,13 +87,16 @@ bool downloadFile(int s, std::string filename)
 -- DATE: Feb 27, 2013
 --
 -- DESIGNER:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner
 --
 -- INTERFACE: void uploadFile(int s)
+--
 -- RETURNS: void.
 --
--- NOTES:	Begins the process of sending a file to the server. 
---			If a file is successfully opened, a thread is spawned to send the file
+-- NOTES:
+-- Begins the process of sending a file to the server. 
+-- If a file is successfully opened, a thread is spawned to send the file
 ----------------------------------------------------------------------------------------------------------------------*/
 void uploadFile(int s)
 {
@@ -108,12 +114,15 @@ void uploadFile(int s)
 -- DATE: Feb 27, 2013
 --
 -- DESIGNER:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner
 --
 -- INTERFACE: bool SaveFile(uData* Download)
+--
 -- RETURNS: true if a file is selected, false otherwise
 --
--- NOTES:	Save a file using a dialog box.
+-- NOTES:
+-- Save a file using a dialog box.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool SaveFile(uData* Download)
 {
@@ -141,12 +150,15 @@ bool SaveFile(uData* Download)
 -- DATE: Mar 26, 2013
 --
 -- DESIGNER:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
+--
+-- PROGRAMMER:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: DWORD WINAPI DownloadThread(LPVOID lpParameter)
+--
 -- RETURNS: DWORD.
 --
--- NOTES:	The thread that begins the downloading process.
+-- NOTES:
+-- The thread that begins the downloading process.
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI DownloadThread(LPVOID lpParameter)
 {
@@ -172,13 +184,16 @@ DWORD WINAPI DownloadThread(LPVOID lpParameter)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNERS:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner
+-- DESIGNER:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner
 --
 -- INTERFACE: bool DownloadThread(uData* Download, std::string filename)
+--
 -- RETURNS: true if function succeeded, false otherwise.
 --
--- NOTES:	The function that copies the data sent from the server into a file.
+-- NOTES:
+-- The function that copies the data sent from the server into a file.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool Download(uData* Download, std::string filename)
 {
@@ -190,7 +205,7 @@ bool Download(uData* Download, std::string filename)
 	WSADATA WSAData;
 	WORD wVersionRequested;
 	FILE * hFile;
-	LPSOCKET_INFORMATION SI;
+	LPSOCKET_INFORMATION SI = (LPSOCKET_INFORMATION) malloc(sizeof(SI));
 	
 	port = Download->port;
 
@@ -258,7 +273,8 @@ bool Download(uData* Download, std::string filename)
 	/* sending the download message to the server */
 	int ret = sprintf(sbuf, "D %s\n", filename.c_str());
 	SI->DataBuf.len = ret;
-	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+	DWORD bytesSent = 0;
+	WSASend(SI->Socket, &SI->DataBuf, 1, &bytesSent, 0, NULL, NULL);
 
 	DWORD flag = 0;
 	DWORD error1 = 1, error2 = 0;
@@ -269,12 +285,12 @@ bool Download(uData* Download, std::string filename)
 		printf("Could not fopen\n");
 	}
 	memset(sbuf, 0, sizeof(sbuf));
-
+	DWORD bytesRead = 0;
 	ret = 0;
 	while (error1 > 0)
 	{
 		SI->DataBuf.len = BUFSIZE;
-		error1 = WSARecv(SI->Socket, &SI->DataBuf, 1, NULL, &flag, &(SI->Overlapped), NULL);
+		error1 = WSARecv(SI->Socket, &SI->DataBuf, 1, &flag, &flag, &(SI->Overlapped), NULL);
 
 		if ((int)error1 == SOCKET_ERROR && (error2 = WSAGetLastError()) != WSA_IO_PENDING)
 			break;
@@ -299,13 +315,16 @@ bool Download(uData* Download, std::string filename)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNERS:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
+-- DESIGNER:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner
 --
 -- INTERFACE: bool SelectFile(uData* upload)
+--
 -- RETURNS: true if a file is selected, false otherwise.
 --
--- NOTES:	Opens a file using a dialog box.
+-- NOTES:
+-- Opens a file using a dialog box.
 ----------------------------------------------------------------------------------------------------------------------*/
 bool SelectFile(uData* upload)
 {
@@ -339,13 +358,16 @@ bool SelectFile(uData* upload)
 --
 -- DATE: Feb 27, 2013
 --
--- DESIGNERS:  Jacob Miner
--- PROGRAMMERS:  Jacob Miner, Kevin Tangeman
+-- DESIGNER:  Jacob Miner
+--
+-- PROGRAMMER:  Jacob Miner, Kevin Tangeman
 --
 -- INTERFACE: DWORD WINAPI UploadThread(LPVOID lpParameter)
+--
 -- RETURNS: DWORD.
 --
--- NOTES:	The thread that reads the file specified and sends it to the server using WSASend
+-- NOTES:
+-- The thread that reads the file specified and sends it to the server using WSASend
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI UploadThread(LPVOID lpParameter)
 {
@@ -445,12 +467,13 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 
 	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
+	DWORD bytesSent = 0;
 	while ((ret = fread(sbuf, 1, BUFSIZE, fp)) > 0)
 	{
 		SI->DataBuf.len = ret;
 		increment_progress_bar(ret);
 		
-		WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+		WSASend(SI->Socket, &SI->DataBuf, 1, &bytesSent, 0, NULL, NULL);
 		memset(sbuf, 0, sizeof(sbuf));
 	}
 

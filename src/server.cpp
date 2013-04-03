@@ -348,7 +348,7 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 -- INTERFACE:	void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 -- RETURNS:		void
 --
--- NOTES:      
+-- NOTES:		
 ----------------------------------------------------------------------------------------------------------------------*/
 void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize) {
 	char buf[BUFSIZE];
@@ -396,7 +396,7 @@ bool validate_param(string param, SOCKET error_sock, string error_msg) {
 -- INTERFACE:  void process_download_file (ClientContext * ctx, string song)
 -- RETURNS: nothing
 --
--- NOTES:      
+-- NOTES:      Handles when the user clicks to download
 ----------------------------------------------------------------------------------------------------------------------*/
 void process_download_file (ClientContext * ctx, string song) {
 	// Validate
@@ -593,15 +593,15 @@ void find_songs (std::vector<string>& songs) {
 /*----------------------------------------------------------------------------------------------
 -- FUNCTION:	get_channels
 --
--- DATE:		Mar 23, 2013
+-- DATE:		Apr 1, 2013
 --
--- DESIGNERS:		David Czech
--- PROGRAMMERS: 	David Czech
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho
 --
 -- INTERFACE:	void get_channels(vector<string>& channelList)
 -- RETURNS:		void
 --
--- NOTES:		
+-- NOTES:		Gets a list of the channels in the channels.lst file
 ----------------------------------------------------------------------------------------------*/
 void get_channels(vector<string>& channelList) {	
 	string channel;
@@ -622,13 +622,13 @@ void get_channels(vector<string>& channelList) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho
--- PROGRAMMERS: 	Dennis Ho
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho	
 --
 -- INTERFACE:	ChannelInfo extract_channel_info(const string& channelString)
 -- RETURNS:		ChannelInfo
 --
--- NOTES:		
+-- NOTES:		Parses the specified channel string into the name/ip/port
 ----------------------------------------------------------------------------------------------*/
 ChannelInfo extract_channel_info(const string& channelString) {
 	ChannelInfo ci;
@@ -653,14 +653,14 @@ ChannelInfo extract_channel_info(const string& channelString) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		David Czech
--- PROGRAMMERS: 	David Czech
+-- DESIGNERS:		David Czech, Dennis Ho
+-- PROGRAMMERS: 	David Czech, Dennis Ho
 --
 -- INTERFACE:	int __stdcall multicast_cb(void* instance, void *user_data, 
 --						TCallbackMessage message, unsigned int param1, unsigned int param2)
 -- RETURNS:		int
 --
--- NOTES:		
+-- NOTES:		The LibZPlay callback function for when LibZPlay wants to send more data to the stream.
 ----------------------------------------------------------------------------------------------*/
 int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2) {
 	ChannelInfo *ci = (ChannelInfo*)user_data;
@@ -691,13 +691,15 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho
--- PROGRAMMERS: 	Dennis Ho
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho	
 --
 -- INTERFACE:	DWORD WINAPI start_channel(LPVOID lpParameter)
 -- RETURNS:		DWORD
 --
--- NOTES:		
+-- NOTES:		Starts the specified channel. The channel parameter should be in the format:
+--				<channel name> <ip/hostname>:<port>
+--				Channels play in order and loop continuously.
 ----------------------------------------------------------------------------------------------*/
 DWORD WINAPI start_channel(LPVOID lpParameter) {
 	//return 0;
@@ -805,13 +807,13 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho
--- PROGRAMMERS: 	Dennis Ho
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho	
 --
 -- INTERFACE:	void start_all_channels()
 -- RETURNS:		void
 --
--- NOTES:		
+-- NOTES:		Starts all multicast channels
 ----------------------------------------------------------------------------------------------*/
 void start_all_channels() {
 	for (vector<string>::const_iterator it = s.channels.begin(); it != s.channels.end(); ++it)
@@ -825,13 +827,14 @@ void start_all_channels() {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho
--- PROGRAMMERS: 	Dennis Ho
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho
 --
 -- INTERFACE:	vector<string> retrieve_song_list(const char *playlistName)
 -- RETURNS:		vector<string>
 --
--- NOTES:		
+-- NOTES:		Returns a list of the songs contained in the specified file (the file extension
+--				.lst is assumed and should be omitted).
 ----------------------------------------------------------------------------------------------*/
 vector<string> retrieve_song_list(const char *playlistName) {
 	vector<string> list;

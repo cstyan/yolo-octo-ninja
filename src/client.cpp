@@ -227,13 +227,13 @@ DWORD WINAPI stream_song_proc(LPVOID lpParamter) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho
--- PROGRAMMERS: 	Dennis Ho
+-- DESIGNERS:	Dennis Ho	
+-- PROGRAMMERS: Dennis Ho
 --
 -- INTERFACE:	ChannelInfo extractChannelInfo(const char *channel)
 -- RETURNS:		ChannelInfo
 --
--- NOTES:		
+-- NOTES:		Parses the string to extract the channel name/ip/port
 ----------------------------------------------------------------------------------------------*/
 ChannelInfo extractChannelInfo(const char *channel) {
 	ChannelInfo ci;
@@ -257,13 +257,14 @@ ChannelInfo extractChannelInfo(const char *channel) {
 --
 -- DATE:		Mar 23, 2013
 --
--- DESIGNERS:		Dennis Ho, David Czech
--- PROGRAMMERS: 	Dennis Ho, David Czech
+-- DESIGNERS:	Dennis Ho, David Czech
+-- PROGRAMMERS: Dennis Ho, David Czech
 --
 -- INTERFACE:	DWORD WINAPI join_channel(LPVOID lpParameter)
 -- RETURNS:		DWORD
 --
--- NOTES:		Continuously play a multicasted channel stream.
+-- NOTES:		Joins the specified multicast channel. Channel parameter should be in the format:
+--				<channel name> <ip/hostname>:<port>
 ----------------------------------------------------------------------------------------------*/
 DWORD WINAPI join_channel(LPVOID lpParameter) {
 	int error;
@@ -272,7 +273,6 @@ DWORD WINAPI join_channel(LPVOID lpParameter) {
 	struct ip_mreq stMreq;
 
 	// Parse channel info
-	//ChannelInfo ci = extractChannelInfo(*channel);         
 	ChannelInfo ci = extractChannelInfo((char*)lpParameter);         
 
 	if ((ci.sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) {	  

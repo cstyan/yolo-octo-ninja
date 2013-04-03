@@ -449,7 +449,9 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 	SI->DataBuf.buf = sbuf;
 	int ret = sprintf(sbuf, "U %s\n", filename);
 	SI->DataBuf.len = ret;
-	WSASend(SI->Socket, &SI->DataBuf, 1, NULL, 0, NULL, NULL);
+
+	DWORD bytesSent = 0;
+	WSASend(SI->Socket, &SI->DataBuf, 1, &bytesSent, 0, NULL, NULL);
 	
 	char reply_buffer[9] = {0};
 	std::string go_reply("go-ahead");
@@ -467,13 +469,13 @@ DWORD WINAPI UploadThread(LPVOID lpParameter)
 
 	memset(sbuf, 0, sizeof(sbuf));
 	ret = 0;
-	DWORD bytesSent = 0;
+	DWORD bytesRecv = 0;
 	while ((ret = fread(sbuf, 1, BUFSIZE, fp)) > 0)
 	{
 		SI->DataBuf.len = ret;
 		increment_progress_bar(ret);
 		
-		WSASend(SI->Socket, &SI->DataBuf, 1, &bytesSent, 0, NULL, NULL);
+		WSASend(SI->Socket, &SI->DataBuf, 1, &bytesRecv, 0, NULL, NULL);
 		memset(sbuf, 0, sizeof(sbuf));
 	}
 

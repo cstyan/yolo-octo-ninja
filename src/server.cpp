@@ -5,10 +5,31 @@
 --
 --	FUNCTIONS:	
 --
+	Common Server Functions
+		int setup_listening (int port = 1337);
+		void wait_for_connections (int lsock);
+		string recv_request(SOCKET);
+		
+	Client Handlers
+		DWORD WINAPI handle_client(LPVOID);
+		void process_stream_song(ClientContext*, string);
+		void process_download_file(ClientContext * ctx, string song);
+		void process_upload_song(ClientContext * ctx, string song);
+		void process_join_voice(ClientContext * ctx);
+		void transmit_from_stream(SOCKET sock, istringstream& stream, streamsize packetSize);
+		int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage message, unsigned int param1, unsigned int param2);
+
+	Song, Channel and Parameter enumeration, validation and processing
+		ChannelInfo extract_channel_info(const string& channelString);
+		bool validate_param(string param, SOCKET error_sock, string error_msg);
+		void add_files_to_songs (std::vector<string>& songs, const char * file);
+		void find_songs (std::vector<string>& songs);
+		vector<string> retrieve_song_list(const char *playlistName);
+
 --	DATE:		Mar 23, 2013
 --
---	DESIGNERS:	
---	PROGRAMMERS: 
+--	DESIGNERS:	David Czech, Dennis Ho, Kevin Tangeman, Jake Miner
+--	PROGRAMMERS: David Czech, Dennis Ho
 --
 --	NOTES:		Contains Main and the main functions for server program.
 ------------------------------------------------------------------------------------------------*/
@@ -21,13 +42,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-// #include <mutex> 
 
 using namespace std;
 using namespace libZPlay;
 
 Services s;
-//std::mutex services_mutex; // std::mutex is C++11, we'll  probably have to use win32 mutex.
 
 struct ChannelInfo {
    string name;
@@ -273,9 +292,9 @@ int __stdcall stream_cb (void* instance, void *user_data, TCallbackMessage messa
 --
 -- DESIGNER:   Dennis Ho
 --
--- PROGRAMMER: Dennis Ho
+-- PROGRAMMER: Dennis Ho, David Czech
 --
--- INTERFACE:  void transmit_from_stream (SOCKET sock, istringstream stream, streamsize packetSize)
+-- INTERFACE:  void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 --
 -- RETURNS: 
 --
@@ -299,7 +318,7 @@ void transmit_from_stream (SOCKET sock, ifstream& stream, streamsize packetSize)
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNER:   Dennis Ho
+-- DESIGNER:   Dennis Ho, David Czech
 --
 -- PROGRAMMER: Dennis Ho
 --
@@ -323,13 +342,13 @@ bool validate_param(string param, SOCKET error_sock, string error_msg) {
 --
 -- DATE:       Mar 23, 2013
 --
--- DESIGNER:   Dennis Ho
+-- DESIGNER:   Dennis Ho, David Czech
 --
 -- PROGRAMMER: Dennis Ho
 --
 -- INTERFACE:  void process_download_file (ClientContext * ctx, string song)
 --
--- RETURNS: 
+-- RETURNS: nothing
 --
 -- NOTES:      
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -354,6 +373,21 @@ void process_download_file (ClientContext * ctx, string song) {
 	closesocket(ctx->control);
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   process_upload_song
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech, Dennis Ho
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void process_upload_song (ClientContext * ctx, string song)
+--
+-- RETURNS: nothing
+--
+-- NOTES:  Gets file content from client and writes to a file.
+----------------------------------------------------------------------------------------------------------------------*/
 void process_upload_song(ClientContext * ctx, string song) {
 	cout << "Uploading " << song << endl;
 	// Validate
@@ -384,12 +418,27 @@ void process_upload_song(ClientContext * ctx, string song) {
 	//services_mutex.unlock();
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   process_join_voice
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void process_join_voice (ClientContext * ctx)
+--
+-- RETURNS: nothing
+--
+-- NOTES:  Starts voice chat with client. Only one client may start voice communication at one time.
+----------------------------------------------------------------------------------------------------------------------*/
 void process_join_voice(ClientContext * ctx) {
-	cout << "voice" << endl;
+	cout << "voice request" << endl;
 
 	// Only allow one microphone user, like a sempahore.
-	 if (s.microphone) {
-	 	s.microphone = false;
+	if (s.microphone) {
+		s.microphone = false;
 		
 		// Create zplay decoder instance, if it didn't already exist.
 		if (ctx->decoder == NULL)
@@ -430,20 +479,33 @@ void process_join_voice(ClientContext * ctx) {
 			
 			// 	Recv from client
 			int r = recvfrom (ctx->udp, buf, 65507, 0, (sockaddr*)&server, &size);
+			
+			if (r == 0)
+				continue_streaming = false;
 
 			// 	push data to stream
 			player->PushDataToStream(buf, r);
 		}
-
-		// WSARecv();
-		// WSARecvFrom();
-		// while (continue_streaming)
-		// 	SLeepEx(INFINITE, TRUE);
 	}
 
 	s.microphone = true;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   add_files_to_songs
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void add_files_to_songs (std::vector<string>& songs, const char * file)
+--
+-- RETURNS: nothing
+--
+-- NOTES:  Look for songs in the current directory, that match the glob pattern specified in "file", and add them to songs.
+----------------------------------------------------------------------------------------------------------------------*/
 void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(file, &ffd);
@@ -455,6 +517,21 @@ void add_files_to_songs (std::vector<string>& songs, const char * file) {
 	}
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   find_songs
+--
+-- DATE:       Mar 23, 2013
+--
+-- DESIGNER:   David Czech
+--
+-- PROGRAMMER: David Czech
+--
+-- INTERFACE:  void find_songs (std::vector<string>& songs)
+--
+-- RETURNS: nothing
+--
+-- NOTES:  Look for any file that have one of libzplay's supported file type extensions, add add them to songs.
+----------------------------------------------------------------------------------------------------------------------*/
 void find_songs (std::vector<string>& songs) {
 	char songtypes[][7] = {
 		{"*.flac"},
@@ -506,7 +583,7 @@ int __stdcall multicast_cb(void* instance, void *user_data, TCallbackMessage mes
 	
 	if (message == MsgWaveBuffer)
 		while (param2) {
-			size_t sb = min(1024, param2);
+			size_t sb = min(1024, (int)param2);
 			//cout << "Sending " << sb << endl;
 			if (sendto(ci->sock, (const char *)param1, sb, 0, (const sockaddr*)&ci->addr, sizeof(sockaddr_in)) < 0) {
 				return 2;
@@ -575,10 +652,16 @@ DWORD WINAPI start_channel(LPVOID lpParameter) {
 	// Start streaming
 	// Create zplay Instance
 	ZPlay *out = CreateZPlay();
-	//cout << "Current buffer size: " << out->GetSettings( sidWaveBufferSize ) << endl;
-	//out->SetSettings( sidWaveBufferSize, 100 );
-	//services_mutex.lock();
+
+	// Silence player: just in case.
+	//out->SetPlayerVolume(0, 0);
+
+	DWORD dwVolume;
+
+  	if (waveOutGetVolume(NULL, &dwVolume) == MMSYSERR_NOERROR)
+    	waveOutSetVolume(NULL, 0); // mute volume
 	
+	//services_mutex.lock();
 	vector<string> list = retrieve_song_list(ci.name.c_str());
 
 	for (size_t i = 0; i < list.size();)

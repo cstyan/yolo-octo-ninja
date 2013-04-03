@@ -282,7 +282,7 @@ void create_gui (HWND hWnd) {
 
   // Show server hostname dialog box.
   DialogBox(hInst, MAKEINTRESOURCE(IDD_SERVERSETUPBOX), hWnd, ServerSetup);
-  hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", 0, 0, 0, 300, 225, 0, NULL, 0, 0);
+  hFFTwin = CreateWindow((LPSTR)32770, "FFT Graph", 0, CW_USEDEFAULT, CW_USEDEFAULT, 300, 225, hWnd, NULL, 0, 0);
   // Toolbar style window.
   /*hFFTwin = CreateWindowEx(WS_EX_TOOLWINDOW, 
                        (LPSTR)32770,
@@ -446,7 +446,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
       case ID_FILE_VIEWFFT:
-        ShowWindow(hFFTwin, SW_SHOW);
+        if (IsWindowVisible(hFFTwin))
+          ShowWindow(hFFTwin, SW_HIDE);
+        else
+          ShowWindow(hFFTwin, SW_SHOW);
         break;
 
       // Fall through for Song Listbox double click.

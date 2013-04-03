@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-g -Wall
-LIBS=-lgdi32 -lComdlg32 -lws2_32 -lzplay -lcomctl32
+LIBS=-lgdi32 -lComdlg32 -lws2_32 -lzplay -lcomctl32 -lwinmm
 SERVER_SOURCES=server.cpp comm-services.cpp common.cpp
 SERVER_OBJECTS=obj/client-res.o $(addprefix obj/,$(SERVER_SOURCES:.cpp=.o))
 
